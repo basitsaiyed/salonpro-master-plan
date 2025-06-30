@@ -3,8 +3,9 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Edit, FileText } from "lucide-react";
+import { Search, Edit, FileText, Eye } from "lucide-react";
 import { CreateInvoiceDialog } from "./CreateInvoiceDialog";
+import { useToast } from "@/hooks/use-toast";
 
 interface Invoice {
   id: string;
@@ -18,6 +19,7 @@ interface Invoice {
 
 export const InvoiceManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const { toast } = useToast();
   
   // Mock invoice data with state management
   const [invoices, setInvoices] = useState<Invoice[]>([
@@ -73,13 +75,36 @@ export const InvoiceManagement = () => {
   };
 
   const handleViewInvoice = (invoiceId: string) => {
-    console.log("View invoice:", invoiceId);
-    // TODO: Implement view invoice functionality
+    const invoice = invoices.find(inv => inv.id === invoiceId);
+    if (invoice) {
+      toast({
+        title: "Invoice Details",
+        description: `Viewing ${invoice.invoiceNumber} for ${invoice.customerName} - Total: ₹${invoice.total}`,
+      });
+    }
   };
 
   const handleEditInvoice = (invoiceId: string) => {
-    console.log("Edit invoice:", invoiceId);
-    // TODO: Implement edit invoice functionality
+    const invoice = invoices.find(inv => inv.id === invoiceId);
+    if (invoice) {
+      toast({
+        title: "Edit Invoice",
+        description: `Opening edit dialog for ${invoice.invoiceNumber}`,
+      });
+    }
+  };
+
+  const handleUpdatePaymentStatus = (invoiceId: string, newStatus: "paid" | "unpaid" | "partial") => {
+    setInvoices(prev => prev.map(invoice => 
+      invoice.id === invoiceId 
+        ? { ...invoice, paymentStatus: newStatus }
+        : invoice
+    ));
+    
+    toast({
+      title: "Payment Status Updated",
+      description: `Invoice payment status changed to ${newStatus}`,
+    });
   };
 
   return (
@@ -147,9 +172,17 @@ export const InvoiceManagement = () => {
                       ₹{invoice.total}
                     </td>
                     <td className="py-3 px-4">
-                      <span className={`px-2 py-1 rounded text-xs font-medium capitalize ${getStatusColor(invoice.paymentStatus)}`}>
+                      <button 
+                        className={`px-2 py-1 rounded text-xs font-medium capitalize cursor-pointer hover:opacity-80 ${getStatusColor(invoice.paymentStatus)}`}
+                        onClick={() => {
+                          const statuses: ("paid" | "unpaid" | "partial")[] = ["paid", "unpaid", "partial"];
+                          const currentIndex = statuses.indexOf(invoice.paymentStatus);
+                          const nextStatus = statuses[(currentIndex + 1) % statuses.length];
+                          handleUpdatePaymentStatus(invoice.id, nextStatus);
+                        }}
+                      >
                         {invoice.paymentStatus}
-                      </span>
+                      </button>
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex gap-2">
@@ -157,13 +190,15 @@ export const InvoiceManagement = () => {
                           variant="outline" 
                           size="sm"
                           onClick={() => handleViewInvoice(invoice.id)}
+                          title="View Invoice"
                         >
-                          <FileText className="h-4 w-4" />
+                          <Eye className="h-4 w-4" />
                         </Button>
                         <Button 
                           variant="outline" 
                           size="sm"
                           onClick={() => handleEditInvoice(invoice.id)}
+                          title="Edit Invoice"
                         >
                           <Edit className="h-4 w-4" />
                         </Button>

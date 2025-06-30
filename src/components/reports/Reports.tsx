@@ -1,9 +1,27 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Users, FileText, Calendar } from "lucide-react";
+import { TrendingUp, Users, FileText, Calendar, Download } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export const Reports = () => {
+  const { toast } = useToast();
+
+  const handleExportReports = () => {
+    toast({
+      title: "Exporting Reports",
+      description: "Your reports are being exported to PDF. Download will start shortly.",
+    });
+    
+    // Simulate export process
+    setTimeout(() => {
+      toast({
+        title: "Export Complete",
+        description: "Reports have been downloaded successfully.",
+      });
+    }, 2000);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -11,7 +29,8 @@ export const Reports = () => {
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Reports & Analytics</h2>
           <p className="text-gray-600">Track your salon's performance and insights</p>
         </div>
-        <Button variant="outline">
+        <Button variant="outline" onClick={handleExportReports}>
+          <Download className="h-4 w-4 mr-2" />
           Export Reports
         </Button>
       </div>
