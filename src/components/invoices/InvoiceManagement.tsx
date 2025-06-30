@@ -3,7 +3,8 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Edit, FileText } from "lucide-react";
+import { Search, Edit, FileText } from "lucide-react";
+import { CreateInvoiceDialog } from "./CreateInvoiceDialog";
 
 interface Invoice {
   id: string;
@@ -18,8 +19,8 @@ interface Invoice {
 export const InvoiceManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   
-  // Mock invoice data
-  const invoices: Invoice[] = [
+  // Mock invoice data with state management
+  const [invoices, setInvoices] = useState<Invoice[]>([
     {
       id: "1",
       invoiceNumber: "INV-001",
@@ -47,7 +48,7 @@ export const InvoiceManagement = () => {
       total: 2500,
       paymentStatus: "partial"
     }
-  ];
+  ]);
 
   const filteredInvoices = invoices.filter(invoice =>
     invoice.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -67,6 +68,20 @@ export const InvoiceManagement = () => {
     }
   };
 
+  const handleCreateInvoice = (newInvoice: Invoice) => {
+    setInvoices(prev => [...prev, newInvoice]);
+  };
+
+  const handleViewInvoice = (invoiceId: string) => {
+    console.log("View invoice:", invoiceId);
+    // TODO: Implement view invoice functionality
+  };
+
+  const handleEditInvoice = (invoiceId: string) => {
+    console.log("Edit invoice:", invoiceId);
+    // TODO: Implement edit invoice functionality
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -74,10 +89,7 @@ export const InvoiceManagement = () => {
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Invoice Management</h2>
           <p className="text-gray-600">Track and manage your salon invoices</p>
         </div>
-        <Button className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Create Invoice
-        </Button>
+        <CreateInvoiceDialog onCreateInvoice={handleCreateInvoice} />
       </div>
 
       {/* Search Bar */}
@@ -141,10 +153,18 @@ export const InvoiceManagement = () => {
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleViewInvoice(invoice.id)}
+                        >
                           <FileText className="h-4 w-4" />
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleEditInvoice(invoice.id)}
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
                       </div>

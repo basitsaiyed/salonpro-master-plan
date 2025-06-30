@@ -3,7 +3,8 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Edit, Trash2 } from "lucide-react";
+import { Search, Edit, Trash2 } from "lucide-react";
+import { AddServiceDialog } from "./AddServiceDialog";
 
 interface Service {
   id: string;
@@ -17,8 +18,8 @@ interface Service {
 export const ServiceManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   
-  // Mock service data
-  const services: Service[] = [
+  // Mock service data with state management
+  const [services, setServices] = useState<Service[]>([
     {
       id: "1",
       name: "Hair Cut & Styling",
@@ -59,12 +60,25 @@ export const ServiceManagement = () => {
       duration: "30 min",
       category: "Nails"
     }
-  ];
+  ]);
 
   const filteredServices = services.filter(service =>
     service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     service.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleAddService = (newService: Service) => {
+    setServices(prev => [...prev, newService]);
+  };
+
+  const handleEditService = (serviceId: string) => {
+    console.log("Edit service:", serviceId);
+    // TODO: Implement edit functionality
+  };
+
+  const handleDeleteService = (serviceId: string) => {
+    setServices(prev => prev.filter(service => service.id !== serviceId));
+  };
 
   return (
     <div className="space-y-6">
@@ -73,10 +87,7 @@ export const ServiceManagement = () => {
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Service Management</h2>
           <p className="text-gray-600">Manage your salon services and pricing</p>
         </div>
-        <Button className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Add Service
-        </Button>
+        <AddServiceDialog onAddService={handleAddService} />
       </div>
 
       {/* Search Bar */}
@@ -107,10 +118,18 @@ export const ServiceManagement = () => {
                   </span>
                 </div>
                 <div className="flex gap-1">
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleEditService(service.id)}
+                  >
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleDeleteService(service.id)}
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>

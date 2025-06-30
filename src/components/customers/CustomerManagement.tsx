@@ -3,7 +3,19 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Edit, Trash2 } from "lucide-react";
+import { Search, Edit, Trash2 } from "lucide-react";
+import { AddCustomerDialog } from "./AddCustomerDialog";
+import { EditCustomerDialog } from "./EditCustomerDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Customer {
   id: string;
@@ -18,9 +30,13 @@ interface Customer {
 
 export const CustomerManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
   
-  // Mock customer data
-  const customers: Customer[] = [
+  // Mock customer data with state management
+  const [customers, setCustomers] = useState<Customer[]>([
     {
       id: "1",
       name: "Priya Sharma",
@@ -51,13 +67,43 @@ export const CustomerManagement = () => {
       totalVisits: 15,
       lastVisit: "Today"
     }
-  ];
+  ]);
 
   const filteredCustomers = customers.filter(customer =>
     customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     customer.phone.includes(searchTerm) ||
     customer.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleAddCustomer = (newCustomer: Customer) => {
+    setCustomers(prev => [...prev, newCustomer]);
+  };
+
+  const handleEditCustomer = (updatedCustomer: Customer) => {
+    setCustomers(prev => 
+      prev.map(customer => 
+        customer.id === updatedCustomer.id ? updatedCustomer : customer
+      )
+    );
+  };
+
+  const handleDeleteCustomer = () => {
+    if (customerToDelete) {
+      setCustomers(prev => prev.filter(customer => customer.id !== customerToDelete.id));
+      setCustomerToDelete(null);
+      setDeleteDialogOpen(false);
+    }
+  };
+
+  const openEditDialog = (customer: Customer) => {
+    setEditingCustomer(customer);
+    setEditDialogOpen(true);
+  };
+
+  const openDeleteDialog = (customer: Customer) => {
+    setCustomerToDelete(customer);
+    setDeleteDialogOpen(true);
+  };
 
   return (
     <div className="space-y-6">
@@ -66,10 +112,7 @@ export const CustomerManagement = () => {
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Customer Management</h2>
           <p className="text-gray-600">Manage your salon customers</p>
         </div>
-        <Button className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Add Customer
-        </Button>
+        <AddCustomerDialog onAddCustomer={handleAddCustomer} />
       </div>
 
       {/* Search Bar */}
@@ -135,10 +178,18 @@ export const CustomerManagement = () => {
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => openEditDialog(customer)}
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => openDeleteDialog(customer)}
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -150,6 +201,28 @@ export const CustomerManagement = () => {
           </div>
         </CardContent>
       </Card>
+
+      <EditCustomerDialog
+        customer={editingCustomer}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onEditCustomer={handleEditCustomer}
+      />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Customer</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {customerToDelete?.name}? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteCustomer}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
