@@ -22,16 +22,21 @@ export const DashboardLayout = ({ children, activeTab, onTabChange }: DashboardL
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm">
+      <header className="bg-white border-b border-slate-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Scissors className="h-8 w-8 text-blue-600 mr-3" />
-              <h1 className="text-xl font-bold text-gray-900">SalonPro</h1>
+              <div className="relative mr-3">
+                <div className="absolute inset-0 bg-gradient-elegant rounded-full blur-sm opacity-30"></div>
+                <div className="relative bg-gradient-elegant p-2 rounded-full">
+                  <Scissors className="h-6 w-6 text-white" />
+                </div>
+              </div>
+              <h1 className="text-xl font-bold text-gradient">SalonPro</h1>
             </div>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-slate-600">
               Welcome back, Salon Owner!
             </div>
           </div>
@@ -42,7 +47,7 @@ export const DashboardLayout = ({ children, activeTab, onTabChange }: DashboardL
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Sidebar Navigation */}
           <aside className="w-full lg:w-64 flex-shrink-0">
-            <Card className="p-4">
+            <Card className="p-4 shadow-sm">
               <nav className="space-y-2">
                 {navItems.map((item) => {
                   const Icon = item.icon;
@@ -50,7 +55,11 @@ export const DashboardLayout = ({ children, activeTab, onTabChange }: DashboardL
                     <Button
                       key={item.id}
                       variant={activeTab === item.id ? "default" : "ghost"}
-                      className="w-full justify-start"
+                      className={`w-full justify-start transition-all duration-200 ${
+                        activeTab === item.id 
+                          ? "bg-gradient-elegant text-white shadow-md" 
+                          : "hover:bg-slate-100 text-slate-700"
+                      }`}
                       onClick={() => onTabChange(item.id)}
                     >
                       <Icon className="mr-2 h-4 w-4" />

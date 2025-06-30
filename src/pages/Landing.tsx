@@ -79,23 +79,23 @@ const Landing = () => {
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-blue-500 rounded-full blur-sm opacity-30"></div>
-                <div className="relative bg-gradient-to-r from-purple-500 to-blue-600 p-2 rounded-full">
+                <div className="absolute inset-0 bg-gradient-elegant rounded-full blur-sm opacity-30"></div>
+                <div className="relative bg-gradient-elegant p-2 rounded-full">
                   <Scissors className="h-6 w-6 text-white" />
                 </div>
               </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              <span className="text-2xl font-bold text-gradient">
                 SalonPro
               </span>
             </div>
             <div className="flex items-center space-x-4">
               <Link to="/login">
-                <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
+                <Button variant="ghost" className="text-slate-600 hover:text-slate-900">
                   Sign In
                 </Button>
               </Link>
               <Link to="/register">
-                <Button className="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white">
+                <Button className="bg-gradient-elegant hover:opacity-90 text-white">
                   Get Started
                 </Button>
               </Link>
@@ -105,23 +105,23 @@ const Landing = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 py-20 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-20 overflow-hidden">
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-20 left-10 w-32 h-32 bg-purple-200 rounded-full opacity-20 animate-pulse"></div>
-          <div className="absolute bottom-20 right-10 w-40 h-40 bg-blue-200 rounded-full opacity-20 animate-bounce" style={{ animationDuration: '3s' }}></div>
-          <div className="absolute top-1/2 left-1/3 w-24 h-24 bg-indigo-200 rounded-full opacity-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute top-20 left-10 w-32 h-32 bg-blue-200 rounded-full opacity-20 animate-pulse-glow"></div>
+          <div className="absolute bottom-20 right-10 w-40 h-40 bg-indigo-200 rounded-full opacity-20 animate-bounce-slow"></div>
+          <div className="absolute top-1/2 left-1/3 w-24 h-24 bg-slate-200 rounded-full opacity-20 animate-pulse-glow"></div>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center">
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+            <h1 className="text-5xl md:text-6xl font-bold text-slate-900 mb-6">
               Transform Your
-              <span className="block bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              <span className="block text-gradient">
                 Salon Management
               </span>
             </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            <p className="text-xl text-slate-600 mb-8 max-w-3xl mx-auto">
               Streamline your salon operations with our all-in-one management platform. 
               From customer management to automated reminders, we've got you covered.
             </p>
@@ -129,7 +129,7 @@ const Landing = () => {
               <Link to="/register">
                 <Button 
                   size="lg" 
-                  className="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                  className="bg-gradient-elegant hover:opacity-90 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 >
                   Start Free Trial
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -138,7 +138,7 @@ const Landing = () => {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="px-8 py-3 text-lg font-semibold border-2 border-purple-200 hover:border-purple-300 hover:bg-purple-50 transition-all duration-200"
+                className="px-8 py-3 text-lg font-semibold border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all duration-200"
               >
                 Watch Demo
               </Button>
@@ -151,10 +151,10 @@ const Landing = () => {
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl font-bold text-slate-900 mb-4">
               Everything You Need to Run Your Salon
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
               Powerful features designed specifically for salon owners to manage their business efficiently.
             </p>
           </div>
@@ -166,10 +166,10 @@ const Landing = () => {
                   <div className="mb-4 transform group-hover:scale-110 transition-transform duration-200">
                     {feature.icon}
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  <h3 className="text-xl font-semibold text-slate-900 mb-2">
                     {feature.title}
                   </h3>
-                  <p className="text-gray-600 leading-relaxed">
+                  <p className="text-slate-600 leading-relaxed">
                     {feature.description}
                   </p>
                 </CardContent>
@@ -180,13 +180,13 @@ const Landing = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20 bg-gradient-to-br from-gray-50 to-gray-100">
+      <section className="py-20 bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl font-bold text-slate-900 mb-4">
               Loved by Salon Owners
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className="text-xl text-slate-600">
               See what our customers have to say about SalonPro
             </p>
           </div>
@@ -200,12 +200,12 @@ const Landing = () => {
                       <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
                     ))}
                   </div>
-                  <p className="text-gray-700 mb-4 italic">
+                  <p className="text-slate-700 mb-4 italic">
                     "{testimonial.content}"
                   </p>
                   <div>
-                    <p className="font-semibold text-gray-900">{testimonial.name}</p>
-                    <p className="text-gray-600 text-sm">{testimonial.salon}</p>
+                    <p className="font-semibold text-slate-900">{testimonial.name}</p>
+                    <p className="text-slate-600 text-sm">{testimonial.salon}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -215,7 +215,7 @@ const Landing = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-purple-600 to-blue-600 text-white relative overflow-hidden">
+      <section className="py-20 bg-gradient-elegant text-white relative overflow-hidden">
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-10 right-20 animate-float">
@@ -237,7 +237,7 @@ const Landing = () => {
             <Link to="/register">
               <Button 
                 size="lg" 
-                className="bg-white text-purple-600 hover:bg-gray-100 px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                className="bg-white text-blue-600 hover:bg-slate-100 px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
               >
                 Start Your Free Trial
                 <CheckCircle className="ml-2 h-5 w-5" />
@@ -251,31 +251,21 @@ const Landing = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
+      <footer className="bg-slate-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-3 mb-4 md:mb-0">
-              <div className="bg-gradient-to-r from-purple-500 to-blue-600 p-2 rounded-full">
+              <div className="bg-gradient-elegant p-2 rounded-full">
                 <Scissors className="h-6 w-6 text-white" />
               </div>
               <span className="text-2xl font-bold">SalonPro</span>
             </div>
-            <div className="text-gray-400 text-sm">
+            <div className="text-slate-400 text-sm">
               © 2024 SalonPro. All rights reserved.
             </div>
           </div>
         </div>
       </footer>
-
-      <style jsx>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-20px); }
-        }
-        .animate-float {
-          animation: float 4s ease-in-out infinite;
-        }
-      `}</style>
     </div>
   );
 };
