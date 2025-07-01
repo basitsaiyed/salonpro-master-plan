@@ -43,14 +43,14 @@ export const AppSidebar = ({ activeTab, onTabChange }: AppSidebarProps) => {
   };
 
   return (
-    <Sidebar className="border-r-0">
+    <Sidebar className="border-r border-slate-200 bg-white">
       <SidebarHeader className="p-6">
         <div className="flex items-center gap-3">
-          <div className="bg-white/20 p-2 rounded-lg">
+          <div className="bg-primary p-2 rounded-lg">
             <Scissors className="h-6 w-6 text-white" />
           </div>
           {!isCollapsed && (
-            <h1 className="text-xl font-bold text-white">SalonPro</h1>
+            <h1 className="text-xl font-bold text-slate-800">SalonPro</h1>
           )}
         </div>
       </SidebarHeader>
@@ -68,8 +68,8 @@ export const AppSidebar = ({ activeTab, onTabChange }: AppSidebarProps) => {
                       onClick={() => onTabChange(item.id)}
                       className={`w-full justify-start py-3 px-4 rounded-lg transition-all duration-200 ${
                         isActive
-                          ? "bg-white/20 text-white font-medium"
-                          : "text-white/80 hover:bg-white/10 hover:text-white"
+                          ? "bg-primary text-white font-medium"
+                          : "text-slate-600 hover:bg-slate-100 hover:text-slate-800"
                       }`}
                     >
                       <Icon className="h-5 w-5" />
@@ -85,19 +85,19 @@ export const AppSidebar = ({ activeTab, onTabChange }: AppSidebarProps) => {
 
       <SidebarFooter className="p-4">
         <div className="space-y-3">
-          <Separator className="bg-white/20" />
+          <Separator className="bg-slate-200" />
           
           {/* User Info */}
           <div className="flex items-center gap-3 px-2">
             <Avatar className="h-8 w-8">
-              <AvatarFallback className="bg-white/20 text-white text-sm">
+              <AvatarFallback className="bg-primary text-white text-sm">
                 SO
               </AvatarFallback>
             </Avatar>
             {!isCollapsed && (
               <div className="flex-1 min-w-0">
-                <p className="text-white font-medium text-sm truncate">Salon Owner</p>
-                <p className="text-white/70 text-xs truncate">owner@salon.com</p>
+                <p className="text-slate-800 font-medium text-sm truncate">Salon Owner</p>
+                <p className="text-slate-600 text-xs truncate">owner@salon.com</p>
               </div>
             )}
           </div>
@@ -106,7 +106,7 @@ export const AppSidebar = ({ activeTab, onTabChange }: AppSidebarProps) => {
           <Button
             onClick={handleLogout}
             variant="ghost"
-            className={`w-full justify-start text-white/80 hover:bg-white/10 hover:text-white ${
+            className={`w-full justify-start text-slate-600 hover:bg-slate-100 hover:text-slate-800 ${
               isCollapsed ? "px-2" : "px-4"
             }`}
           >
