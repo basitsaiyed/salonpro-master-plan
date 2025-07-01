@@ -1,10 +1,10 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Edit, FileText, Eye } from "lucide-react";
+import { Search, Edit, Eye } from "lucide-react";
 import { CreateInvoiceDialog } from "./CreateInvoiceDialog";
+import { EditInvoiceDialog } from "./EditInvoiceDialog";
 import { useToast } from "@/hooks/use-toast";
 
 interface Invoice {
@@ -19,6 +19,8 @@ interface Invoice {
 
 export const InvoiceManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const { toast } = useToast();
   
   // Mock invoice data with state management
@@ -72,6 +74,22 @@ export const InvoiceManagement = () => {
 
   const handleCreateInvoice = (newInvoice: Invoice) => {
     setInvoices(prev => [...prev, newInvoice]);
+    toast({
+      title: "Invoice Created",
+      description: `Invoice ${newInvoice.invoiceNumber} has been created successfully.`,
+    });
+  };
+
+  const handleEditInvoice = (updatedInvoice: Invoice) => {
+    setInvoices(prev => 
+      prev.map(invoice => 
+        invoice.id === updatedInvoice.id ? updatedInvoice : invoice
+      )
+    );
+    toast({
+      title: "Invoice Updated",
+      description: `Invoice ${updatedInvoice.invoiceNumber} has been updated successfully.`,
+    });
   };
 
   const handleViewInvoice = (invoiceId: string) => {
@@ -84,14 +102,9 @@ export const InvoiceManagement = () => {
     }
   };
 
-  const handleEditInvoice = (invoiceId: string) => {
-    const invoice = invoices.find(inv => inv.id === invoiceId);
-    if (invoice) {
-      toast({
-        title: "Edit Invoice",
-        description: `Opening edit dialog for ${invoice.invoiceNumber}`,
-      });
-    }
+  const openEditDialog = (invoice: Invoice) => {
+    setEditingInvoice(invoice);
+    setEditDialogOpen(true);
   };
 
   const handleUpdatePaymentStatus = (invoiceId: string, newStatus: "paid" | "unpaid" | "partial") => {
@@ -197,7 +210,7 @@ export const InvoiceManagement = () => {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => handleEditInvoice(invoice.id)}
+                          onClick={() => openEditDialog(invoice)}
                           title="Edit Invoice"
                         >
                           <Edit className="h-4 w-4" />
@@ -211,6 +224,13 @@ export const InvoiceManagement = () => {
           </div>
         </CardContent>
       </Card>
+
+      <EditInvoiceDialog
+        invoice={editingInvoice}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onEditInvoice={handleEditInvoice}
+      />
     </div>
   );
 };

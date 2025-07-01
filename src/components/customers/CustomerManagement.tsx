@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Search, Edit, Trash2 } from "lucide-react";
 import { AddCustomerDialog } from "./AddCustomerDialog";
 import { EditCustomerDialog } from "./EditCustomerDialog";
+import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,6 +34,7 @@ export const CustomerManagement = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
+  const { toast } = useToast();
   
   // Mock customer data with state management
   const [customers, setCustomers] = useState<Customer[]>([
@@ -77,6 +78,10 @@ export const CustomerManagement = () => {
 
   const handleAddCustomer = (newCustomer: Customer) => {
     setCustomers(prev => [...prev, newCustomer]);
+    toast({
+      title: "Customer Added",
+      description: `${newCustomer.name} has been added successfully.`,
+    });
   };
 
   const handleEditCustomer = (updatedCustomer: Customer) => {
@@ -85,11 +90,19 @@ export const CustomerManagement = () => {
         customer.id === updatedCustomer.id ? updatedCustomer : customer
       )
     );
+    toast({
+      title: "Customer Updated",
+      description: `${updatedCustomer.name} has been updated successfully.`,
+    });
   };
 
   const handleDeleteCustomer = () => {
     if (customerToDelete) {
       setCustomers(prev => prev.filter(customer => customer.id !== customerToDelete.id));
+      toast({
+        title: "Customer Deleted",
+        description: `${customerToDelete.name} has been deleted successfully.`,
+      });
       setCustomerToDelete(null);
       setDeleteDialogOpen(false);
     }

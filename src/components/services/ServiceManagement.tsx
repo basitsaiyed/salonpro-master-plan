@@ -1,10 +1,11 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Edit, Trash2 } from "lucide-react";
 import { AddServiceDialog } from "./AddServiceDialog";
+import { EditServiceDialog } from "./EditServiceDialog";
+import { useToast } from "@/hooks/use-toast";
 
 interface Service {
   id: string;
@@ -17,6 +18,9 @@ interface Service {
 
 export const ServiceManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [editingService, setEditingService] = useState<Service | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const { toast } = useToast();
   
   // Mock service data with state management
   const [services, setServices] = useState<Service[]>([
@@ -69,15 +73,36 @@ export const ServiceManagement = () => {
 
   const handleAddService = (newService: Service) => {
     setServices(prev => [...prev, newService]);
+    toast({
+      title: "Service Added",
+      description: `${newService.name} has been added successfully.`,
+    });
   };
 
-  const handleEditService = (serviceId: string) => {
-    console.log("Edit service:", serviceId);
-    // TODO: Implement edit functionality
+  const handleEditService = (updatedService: Service) => {
+    setServices(prev => 
+      prev.map(service => 
+        service.id === updatedService.id ? updatedService : service
+      )
+    );
+    toast({
+      title: "Service Updated",
+      description: `${updatedService.name} has been updated successfully.`,
+    });
+  };
+
+  const openEditDialog = (service: Service) => {
+    setEditingService(service);
+    setEditDialogOpen(true);
   };
 
   const handleDeleteService = (serviceId: string) => {
+    const service = services.find(s => s.id === serviceId);
     setServices(prev => prev.filter(service => service.id !== serviceId));
+    toast({
+      title: "Service Deleted",
+      description: `${service?.name} has been deleted successfully.`,
+    });
   };
 
   return (
@@ -121,7 +146,7 @@ export const ServiceManagement = () => {
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => handleEditService(service.id)}
+                    onClick={() => openEditDialog(service)}
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -153,6 +178,13 @@ export const ServiceManagement = () => {
           <p className="text-gray-500">No services found matching your search.</p>
         </Card>
       )}
+
+      <EditServiceDialog
+        service={editingService}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onEditService={handleEditService}
+      />
     </div>
   );
 };
