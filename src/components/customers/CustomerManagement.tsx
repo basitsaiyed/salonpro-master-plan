@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, Edit, Trash2, Mail, Phone, Gift, Heart, Filters } from "lucide-react";
 import { AddCustomerDialog } from "./AddCustomerDialog";
 import { EditCustomerDialog } from "./EditCustomerDialog";
 import { CustomerCard } from "./CustomerCard";
@@ -136,59 +135,126 @@ export const CustomerManagement = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-start">
         <div>
-          <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold text-gray-900">
-              Customers ({filteredCustomers.length})
-            </h1>
-            <div className="text-right">
-              <p className="text-sm text-gray-500">Total Revenue:</p>
-              <p className="text-lg font-semibold text-green-600">
-                ${totalRevenue.toLocaleString()}
-              </p>
-            </div>
-          </div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Customer Management</h1>
+          <p className="text-gray-600">Manage your salon customers and their information</p>
         </div>
         <AddCustomerDialog onAddCustomer={handleAddCustomer} />
       </div>
 
       {/* Search Bar */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+      <div className="bg-white rounded-lg border p-6">
+        <div className="flex gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             <Input
               placeholder="Search customers by name, phone, or email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-12 h-12 text-base"
             />
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Customer Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredCustomers.map((customer) => (
-          <CustomerCard
-            key={customer.id}
-            customer={customer}
-            onEdit={openEditDialog}
-            onDelete={openDeleteDialog}
-          />
-        ))}
+          <Button variant="outline" className="h-12 px-6">
+            <Filters className="h-5 w-5 mr-2" />
+            Filters
+          </Button>
+        </div>
       </div>
 
-      {filteredCustomers.length === 0 && (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <p className="text-gray-500">No customers found matching your search.</p>
-          </CardContent>
-        </Card>
-      )}
+      {/* Customer List */}
+      <div className="bg-white rounded-lg border">
+        <div className="p-6 border-b">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold text-gray-900">
+              Customers ({filteredCustomers.length})
+            </h2>
+            <div className="text-right">
+              <p className="text-lg font-semibold text-gray-900">
+                Total Revenue: ${totalRevenue.toLocaleString()}
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="divide-y">
+          {filteredCustomers.map((customer) => (
+            <div key={customer.id} className="p-6 hover:bg-gray-50">
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-4">
+                  <h3 className="text-xl font-semibold text-gray-900">{customer.name}</h3>
+                  <span className="inline-block bg-gray-100 text-gray-700 text-sm px-3 py-1 rounded-full">
+                    {customer.customerType}
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => openEditDialog(customer)}
+                    className="h-10 w-10 p-0"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => openDeleteDialog(customer)}
+                    className="h-10 w-10 p-0 text-red-600 hover:text-red-700 hover:border-red-300"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6 mb-4">
+                <div className="flex items-center gap-3 text-gray-600">
+                  <Mail className="h-5 w-5" />
+                  <span className="text-base">{customer.email}</span>
+                </div>
+                
+                <div className="flex items-center gap-3 text-gray-600">
+                  <Phone className="h-5 w-5" />
+                  <span className="text-base">{customer.phone}</span>
+                </div>
+
+                <div className="flex items-center gap-3 text-gray-600">
+                  <Gift className="h-5 w-5 text-pink-500" />
+                  <span className="text-base">Birthday: {customer.birthday}</span>
+                </div>
+                
+                <div className="flex items-center gap-3 text-gray-600">
+                  <Heart className="h-5 w-5 text-red-500" />
+                  <span className="text-base">Anniversary: {customer.anniversary}</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-8 text-base">
+                <div>
+                  <span className="text-gray-600">Visits: </span>
+                  <span className="font-semibold">{customer.totalVisits}</span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Spent: </span>
+                  <span className="font-semibold text-green-600">${customer.totalSpent}</span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Last visit: </span>
+                  <span className="font-medium">{customer.lastVisit}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {filteredCustomers.length === 0 && (
+          <div className="p-12 text-center">
+            <p className="text-gray-500 text-lg">No customers found matching your search.</p>
+          </div>
+        )}
+      </div>
 
       <EditCustomerDialog
         customer={editingCustomer}
