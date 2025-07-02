@@ -1,11 +1,11 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Scissors, Sparkles, Star, Heart } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -16,6 +16,9 @@ const Register = () => {
     password: "",
     confirmPassword: ""
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const { register } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -24,10 +27,29 @@ const Register = () => {
     }));
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Register attempt:", formData);
-    // TODO: Implement actual registration logic
+    
+    if (formData.password !== formData.confirmPassword) {
+      // You can add a toast here for password mismatch
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    const success = await register({
+      name: formData.ownerName,
+      email: formData.email,
+      password: formData.password,
+      phone: formData.phone,
+      salon_name: formData.salonName
+    });
+    
+    if (success) {
+      navigate('/dashboard');
+    }
+    
+    setIsLoading(false);
   };
 
   return (
@@ -85,6 +107,7 @@ const Register = () => {
                     placeholder="Salon name"
                     className="h-11 border-slate-200 focus:border-blue-400 focus:ring-blue-400 transition-all duration-200"
                     required
+                    disabled={isLoading}
                   />
                 </div>
                 <div className="space-y-2">
@@ -97,6 +120,7 @@ const Register = () => {
                     placeholder="Your name"
                     className="h-11 border-slate-200 focus:border-blue-400 focus:ring-blue-400 transition-all duration-200"
                     required
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -111,6 +135,7 @@ const Register = () => {
                   placeholder="Enter your email"
                   className="h-11 border-slate-200 focus:border-blue-400 focus:ring-blue-400 transition-all duration-200"
                   required
+                  disabled={isLoading}
                 />
               </div>
               
@@ -124,6 +149,7 @@ const Register = () => {
                   placeholder="Enter your phone number"
                   className="h-11 border-slate-200 focus:border-blue-400 focus:ring-blue-400 transition-all duration-200"
                   required
+                  disabled={isLoading}
                 />
               </div>
               
@@ -138,6 +164,7 @@ const Register = () => {
                     placeholder="Password"
                     className="h-11 border-slate-200 focus:border-blue-400 focus:ring-blue-400 transition-all duration-200"
                     required
+                    disabled={isLoading}
                   />
                 </div>
                 <div className="space-y-2">
@@ -150,6 +177,7 @@ const Register = () => {
                     placeholder="Confirm"
                     className="h-11 border-slate-200 focus:border-blue-400 focus:ring-blue-400 transition-all duration-200"
                     required
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -157,8 +185,9 @@ const Register = () => {
               <Button 
                 type="submit" 
                 className="w-full h-12 bg-gradient-elegant hover:opacity-90 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] mt-6"
+                disabled={isLoading}
               >
-                Create Account
+                {isLoading ? "Creating Account..." : "Create Account"}
               </Button>
             </form>
             

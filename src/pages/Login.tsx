@@ -5,16 +5,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Scissors, Sparkles, Star } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login attempt:", { email, password });
-    // TODO: Implement actual login logic
+    setIsLoading(true);
+    
+    const success = await login(email, password);
+    if (success) {
+      navigate('/dashboard');
+    }
+    
+    setIsLoading(false);
   };
 
   return (
@@ -26,7 +36,6 @@ const Login = () => {
         <div className="absolute bottom-1/4 left-1/4 w-24 h-24 bg-indigo-200 rounded-full opacity-20 animate-pulse-glow"></div>
         <div className="absolute bottom-10 right-1/4 w-20 h-20 bg-slate-200 rounded-full opacity-20 animate-bounce-slow"></div>
         
-        {/* Floating Icons */}
         <div className="absolute top-20 left-1/3 animate-float">
           <Sparkles className="h-6 w-6 text-blue-400 opacity-40" />
         </div>
@@ -68,6 +77,7 @@ const Login = () => {
                   placeholder="Enter your email"
                   className="h-12 border-slate-200 focus:border-blue-400 focus:ring-blue-400 transition-all duration-200"
                   required
+                  disabled={isLoading}
                 />
               </div>
               <div className="space-y-2">
@@ -80,13 +90,15 @@ const Login = () => {
                   placeholder="Enter your password"
                   className="h-12 border-slate-200 focus:border-blue-400 focus:ring-blue-400 transition-all duration-200"
                   required
+                  disabled={isLoading}
                 />
               </div>
               <Button 
                 type="submit" 
                 className="w-full h-12 bg-gradient-elegant hover:opacity-90 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02]"
+                disabled={isLoading}
               >
-                Sign In
+                {isLoading ? "Signing In..." : "Sign In"}
               </Button>
             </form>
             
