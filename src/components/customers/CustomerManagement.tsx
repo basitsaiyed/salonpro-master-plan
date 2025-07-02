@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Edit, Trash2, Mail, Phone, Gift, Heart, Filters } from "lucide-react";
+import { Search, Edit, Trash2, Mail, Phone, Gift, Heart, Filter } from "lucide-react";
 import { AddCustomerDialog } from "./AddCustomerDialog";
 import { EditCustomerDialog } from "./EditCustomerDialog";
 import { CustomerCard } from "./CustomerCard";
@@ -158,7 +158,7 @@ export const CustomerManagement = () => {
             />
           </div>
           <Button variant="outline" className="h-12 px-6">
-            <Filters className="h-5 w-5 mr-2" />
+            <Filter className="h-5 w-5 mr-2" />
             Filters
           </Button>
         </div>
