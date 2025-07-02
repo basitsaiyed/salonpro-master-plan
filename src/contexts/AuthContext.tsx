@@ -3,9 +3,20 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { apiClient } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 
+interface User {
+  id: string;
+  email: string;
+  name?: string;
+}
+
+interface AuthResponse {
+  user: User;
+  message?: string;
+}
+
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: any;
+  user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
   register: (userData: any) => Promise<boolean>;
   logout: () => void;
@@ -28,7 +39,7 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -44,6 +55,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setIsAuthenticated(true);
     } catch (error) {
       setIsAuthenticated(false);
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -51,9 +63,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const response = await apiClient.login(email, password);
+      const response = await apiClient.login(email, password) as AuthResponse;
       setIsAuthenticated(true);
-      setUser(response.user);
+      if (response && typeof response === 'object' && 'user' in response) {
+        setUser(response.user);
+      }
       toast({
         title: "Login Successful",
         description: "Welcome back!",
@@ -71,9 +85,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const register = async (userData: any): Promise<boolean> => {
     try {
-      const response = await apiClient.register(userData);
+      const response = await apiClient.register(userData) as AuthResponse;
       setIsAuthenticated(true);
-      setUser(response.user);
+      if (response && typeof response === 'object' && 'user' in response) {
+        setUser(response.user);
+      }
       toast({
         title: "Registration Successful",
         description: "Welcome to SalonPro!",
