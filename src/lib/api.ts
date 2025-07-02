@@ -58,14 +58,14 @@ class ApiClient {
     return this.request('/api/customers');
   }
 
-  async createCustomer(customerData: any) {
+  async createCustomer(customerData: CreateCustomerInput) {
     return this.request('/api/customers', {
       method: 'POST',
       body: JSON.stringify(customerData),
     });
   }
 
-  async updateCustomer(id: string, customerData: any) {
+  async updateCustomer(id: string, customerData: UpdateCustomerInput) {
     return this.request(`/api/customers/${id}`, {
       method: 'PUT',
       body: JSON.stringify(customerData),
@@ -76,6 +76,10 @@ class ApiClient {
     return this.request(`/api/customers/${id}`, {
       method: 'DELETE',
     });
+  }
+
+  async getCustomer(id: string) {
+    return this.request(`/api/customers/${id}`);
   }
 
   // Services methods
@@ -119,6 +123,43 @@ class ApiClient {
   async getReports() {
     return this.request('/api/reports');
   }
+}
+
+// Types matching your backend
+export interface CreateCustomerInput {
+  name: string;
+  phone: string;
+  email?: string;
+  birthday?: string; // ISO date string
+  anniversary?: string; // ISO date string
+  notes?: string;
+}
+
+export interface UpdateCustomerInput {
+  name?: string;
+  phone?: string;
+  email?: string;
+  birthday?: string; // ISO date string
+  anniversary?: string; // ISO date string
+  notes?: string;
+  isActive?: boolean;
+}
+
+export interface Customer {
+  ID: string;
+  SalonID: string;
+  Name: string;
+  Phone: string;
+  Email: string;
+  Birthday?: string;
+  Anniversary?: string;
+  Notes: string;
+  TotalVisits: number;
+  TotalSpent: number;
+  LastVisit?: string;
+  IsActive: boolean;
+  CreatedAt: string;
+  UpdatedAt: string;
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);

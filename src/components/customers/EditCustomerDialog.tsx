@@ -4,23 +4,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-interface Customer {
-  id: string;
-  name: string;
-  phone: string;
-  email: string;
-  birthday: string;
-  anniversary: string;
-  totalVisits: number;
-  lastVisit: string;
-}
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Customer, UpdateCustomerInput } from "@/lib/api";
 
 interface EditCustomerDialogProps {
   customer: Customer | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onEditCustomer: (customer: Customer) => void;
+  onEditCustomer: (customer: UpdateCustomerInput) => void;
 }
 
 export const EditCustomerDialog = ({ customer, open, onOpenChange, onEditCustomer }: EditCustomerDialogProps) => {
@@ -29,35 +21,53 @@ export const EditCustomerDialog = ({ customer, open, onOpenChange, onEditCustome
     phone: "",
     email: "",
     birthday: "",
-    anniversary: ""
+    anniversary: "",
+    notes: "",
+    isActive: true
   });
 
   useEffect(() => {
     if (customer) {
       setFormData({
-        name: customer.name,
-        phone: customer.phone,
-        email: customer.email,
-        birthday: customer.birthday,
-        anniversary: customer.anniversary
+        name: customer.Name || "",
+        phone: customer.Phone || "",
+        email: customer.Email || "",
+        birthday: customer.Birthday ? customer.Birthday.split('T')[0] : "",
+        anniversary: customer.Anniversary ? customer.Anniversary.split('T')[0] : "",
+        notes: customer.Notes || "",
+        isActive: customer.IsActive
       });
     }
   }, [customer]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({
       ...prev,
       [e.target.id]: e.target.value
     }));
   };
 
+  const handleActiveChange = (checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      isActive: checked
+    }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (customer) {
-      onEditCustomer({
-        ...customer,
-        ...formData
-      });
+      const updateData: UpdateCustomerInput = {
+        name: formData.name || undefined,
+        phone: formData.phone || undefined,
+        email: formData.email || undefined,
+        birthday: formData.birthday || undefined,
+        anniversary: formData.anniversary || undefined,
+        notes: formData.notes || undefined,
+        isActive: formData.isActive
+      };
+
+      onEditCustomer(updateData);
       onOpenChange(false);
     }
   };
@@ -76,7 +86,6 @@ export const EditCustomerDialog = ({ customer, open, onOpenChange, onEditCustome
               value={formData.name}
               onChange={handleChange}
               placeholder="Customer name"
-              required
             />
           </div>
           <div>
@@ -86,7 +95,6 @@ export const EditCustomerDialog = ({ customer, open, onOpenChange, onEditCustome
               value={formData.phone}
               onChange={handleChange}
               placeholder="+91 98765 43210"
-              required
             />
           </div>
           <div>
@@ -116,6 +124,24 @@ export const EditCustomerDialog = ({ customer, open, onOpenChange, onEditCustome
               value={formData.anniversary}
               onChange={handleChange}
             />
+          </div>
+          <div>
+            <Label htmlFor="notes">Notes</Label>
+            <Textarea
+              id="notes"
+              value={formData.notes}
+              onChange={handleChange}
+              placeholder="Additional notes about the customer..."
+              rows={3}
+            />
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="isActive"
+              checked={formData.isActive}
+              onCheckedChange={handleActiveChange}
+            />
+            <Label htmlFor="isActive">Active Customer</Label>
           </div>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

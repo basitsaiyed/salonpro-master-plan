@@ -4,10 +4,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Plus } from "lucide-react";
+import { CreateCustomerInput } from "@/lib/api";
 
 interface AddCustomerDialogProps {
-  onAddCustomer: (customer: any) => void;
+  onAddCustomer: (customer: CreateCustomerInput) => void;
 }
 
 export const AddCustomerDialog = ({ onAddCustomer }: AddCustomerDialogProps) => {
@@ -17,10 +19,11 @@ export const AddCustomerDialog = ({ onAddCustomer }: AddCustomerDialogProps) => 
     phone: "",
     email: "",
     birthday: "",
-    anniversary: ""
+    anniversary: "",
+    notes: ""
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({
       ...prev,
       [e.target.id]: e.target.value
@@ -29,14 +32,18 @@ export const AddCustomerDialog = ({ onAddCustomer }: AddCustomerDialogProps) => 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const newCustomer = {
-      id: Date.now().toString(),
-      ...formData,
-      totalVisits: 0,
-      lastVisit: "Never"
+    
+    const customerData: CreateCustomerInput = {
+      name: formData.name,
+      phone: formData.phone,
+      email: formData.email || undefined,
+      birthday: formData.birthday || undefined,
+      anniversary: formData.anniversary || undefined,
+      notes: formData.notes || undefined,
     };
-    onAddCustomer(newCustomer);
-    setFormData({ name: "", phone: "", email: "", birthday: "", anniversary: "" });
+
+    onAddCustomer(customerData);
+    setFormData({ name: "", phone: "", email: "", birthday: "", anniversary: "", notes: "" });
     setOpen(false);
   };
 
@@ -54,7 +61,7 @@ export const AddCustomerDialog = ({ onAddCustomer }: AddCustomerDialogProps) => 
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">Name *</Label>
             <Input
               id="name"
               value={formData.name}
@@ -64,7 +71,7 @@ export const AddCustomerDialog = ({ onAddCustomer }: AddCustomerDialogProps) => 
             />
           </div>
           <div>
-            <Label htmlFor="phone">Phone</Label>
+            <Label htmlFor="phone">Phone *</Label>
             <Input
               id="phone"
               value={formData.phone}
@@ -99,6 +106,16 @@ export const AddCustomerDialog = ({ onAddCustomer }: AddCustomerDialogProps) => 
               type="date"
               value={formData.anniversary}
               onChange={handleChange}
+            />
+          </div>
+          <div>
+            <Label htmlFor="notes">Notes</Label>
+            <Textarea
+              id="notes"
+              value={formData.notes}
+              onChange={handleChange}
+              placeholder="Additional notes about the customer..."
+              rows={3}
             />
           </div>
           <div className="flex justify-end gap-2">

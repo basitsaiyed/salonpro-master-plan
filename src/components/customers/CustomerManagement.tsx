@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +8,7 @@ import { AddCustomerDialog } from "./AddCustomerDialog";
 import { EditCustomerDialog } from "./EditCustomerDialog";
 import { CustomerCard } from "./CustomerCard";
 import { useToast } from "@/hooks/use-toast";
+import { apiClient, Customer, CreateCustomerInput, UpdateCustomerInput } from "@/lib/api";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,109 +20,105 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-interface Customer {
-  id: string;
-  name: string;
-  phone: string;
-  email: string;
-  birthday: string;
-  anniversary: string;
-  totalVisits: number;
-  lastVisit: string;
-  customerType: string;
-  totalSpent: number;
-}
-
 export const CustomerManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  
-  // Mock customer data with enhanced information
-  const [customers, setCustomers] = useState<Customer[]>([
-    {
-      id: "1",
-      name: "Aayush",
-      phone: "+91 22 2222 2222",
-      email: "aayushp@zenithive.com",
-      birthday: "Jun 1",
-      anniversary: "Jun 1",
-      totalVisits: 12,
-      lastVisit: "Invalid Date",
-      customerType: "Regular",
-      totalSpent: 1200
-    },
-    {
-      id: "2",
-      name: "Basit Saiyed",
-      phone: "+91 78978 97890",
-      email: "basits@zenithive.com",
-      birthday: "Jul 1",
-      anniversary: "Jul 1",
-      totalVisits: 8,
-      lastVisit: "Invalid Date",
-      customerType: "Regular",
-      totalSpent: 850
-    },
-    {
-      id: "3",
-      name: "Sneha Patel",
-      phone: "+91 76543 21098",
-      email: "sneha@example.com",
-      birthday: "22 Nov",
-      anniversary: "05 Jun",
-      totalVisits: 15,
-      lastVisit: "Today",
-      customerType: "Premium",
-      totalSpent: 2100
+
+  // Load customers from API
+  useEffect(() => {
+    loadCustomers();
+  }, []);
+
+  const loadCustomers = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.getCustomers();
+      console.log('Customers loaded:', response);
+      setCustomers(response || []);
+    } catch (error) {
+      console.error('Failed to load customers:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load customers. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
 
   const filteredCustomers = customers.filter(customer =>
-    customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.phone.includes(searchTerm) ||
-    customer.email.toLowerCase().includes(searchTerm.toLowerCase())
+    customer.Name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    customer.Phone.includes(searchTerm) ||
+    customer.Email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const totalRevenue = customers.reduce((sum, customer) => sum + customer.totalSpent, 0);
+  const totalRevenue = customers.reduce((sum, customer) => sum + customer.TotalSpent, 0);
 
-  const handleAddCustomer = (newCustomer: any) => {
-    const customerWithDefaults = {
-      ...newCustomer,
-      customerType: "Regular",
-      totalSpent: 0
-    };
-    setCustomers(prev => [...prev, customerWithDefaults]);
-    toast({
-      title: "Customer Added",
-      description: `${newCustomer.name} has been added successfully.`,
-    });
+  const handleAddCustomer = async (newCustomerData: CreateCustomerInput) => {
+    try {
+      const newCustomer = await apiClient.createCustomer(newCustomerData);
+      console.log('Customer created:', newCustomer);
+      await loadCustomers(); // Reload to get fresh data
+      toast({
+        title: "Customer Added",
+        description: `${newCustomerData.name} has been added successfully.`,
+      });
+    } catch (error) {
+      console.error('Failed to create customer:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add customer. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleEditCustomer = (updatedCustomer: Customer) => {
-    setCustomers(prev => 
-      prev.map(customer => 
-        customer.id === updatedCustomer.id ? updatedCustomer : customer
-      )
-    );
-    toast({
-      title: "Customer Updated",
-      description: `${updatedCustomer.name} has been updated successfully.`,
-    });
+  const handleEditCustomer = async (updatedCustomerData: UpdateCustomerInput) => {
+    if (!editingCustomer) return;
+    
+    try {
+      await apiClient.updateCustomer(editingCustomer.ID, updatedCustomerData);
+      await loadCustomers(); // Reload to get fresh data
+      toast({
+        title: "Customer Updated",
+        description: `Customer has been updated successfully.`,
+      });
+    } catch (error) {
+      console.error('Failed to update customer:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update customer. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDeleteCustomer = () => {
-    if (customerToDelete) {
-      setCustomers(prev => prev.filter(customer => customer.id !== customerToDelete.id));
+  const handleDeleteCustomer = async () => {
+    if (!customerToDelete) return;
+    
+    try {
+      await apiClient.deleteCustomer(customerToDelete.ID);
+      await loadCustomers(); // Reload to get fresh data
       toast({
         title: "Customer Deleted",
-        description: `${customerToDelete.name} has been deleted successfully.`,
+        description: `${customerToDelete.Name} has been deleted successfully.`,
       });
       setCustomerToDelete(null);
       setDeleteDialogOpen(false);
+    } catch (error) {
+      console.error('Failed to delete customer:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete customer. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -133,6 +131,19 @@ export const CustomerManagement = () => {
     setCustomerToDelete(customer);
     setDeleteDialogOpen(true);
   };
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "Not set";
+    return new Date(dateString).toLocaleDateString();
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg">Loading customers...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 p-6">
@@ -173,7 +184,7 @@ export const CustomerManagement = () => {
             </h2>
             <div className="text-right">
               <p className="text-lg font-semibold text-gray-900">
-                Total Revenue: ${totalRevenue.toLocaleString()}
+                Total Revenue: ${totalRevenue.toFixed(2)}
               </p>
             </div>
           </div>
@@ -181,12 +192,16 @@ export const CustomerManagement = () => {
         
         <div className="divide-y">
           {filteredCustomers.map((customer) => (
-            <div key={customer.id} className="p-6 hover:bg-gray-50">
+            <div key={customer.ID} className="p-6 hover:bg-gray-50">
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-4">
-                  <h3 className="text-xl font-semibold text-gray-900">{customer.name}</h3>
-                  <span className="inline-block bg-gray-100 text-gray-700 text-sm px-3 py-1 rounded-full">
-                    {customer.customerType}
+                  <h3 className="text-xl font-semibold text-gray-900">{customer.Name}</h3>
+                  <span className={`inline-block text-sm px-3 py-1 rounded-full ${
+                    customer.IsActive 
+                      ? 'bg-green-100 text-green-700' 
+                      : 'bg-gray-100 text-gray-700'
+                  }`}>
+                    {customer.IsActive ? 'Active' : 'Inactive'}
                   </span>
                 </div>
                 <div className="flex gap-2">
@@ -212,44 +227,50 @@ export const CustomerManagement = () => {
               <div className="grid grid-cols-2 gap-6 mb-4">
                 <div className="flex items-center gap-3 text-gray-600">
                   <Mail className="h-5 w-5" />
-                  <span className="text-base">{customer.email}</span>
+                  <span className="text-base">{customer.Email || 'No email'}</span>
                 </div>
                 
                 <div className="flex items-center gap-3 text-gray-600">
                   <Phone className="h-5 w-5" />
-                  <span className="text-base">{customer.phone}</span>
+                  <span className="text-base">{customer.Phone}</span>
                 </div>
 
                 <div className="flex items-center gap-3 text-gray-600">
                   <Gift className="h-5 w-5 text-pink-500" />
-                  <span className="text-base">Birthday: {customer.birthday}</span>
+                  <span className="text-base">Birthday: {formatDate(customer.Birthday)}</span>
                 </div>
                 
                 <div className="flex items-center gap-3 text-gray-600">
                   <Heart className="h-5 w-5 text-red-500" />
-                  <span className="text-base">Anniversary: {customer.anniversary}</span>
+                  <span className="text-base">Anniversary: {formatDate(customer.Anniversary)}</span>
                 </div>
               </div>
 
               <div className="flex items-center gap-8 text-base">
                 <div>
                   <span className="text-gray-600">Visits: </span>
-                  <span className="font-semibold">{customer.totalVisits}</span>
+                  <span className="font-semibold">{customer.TotalVisits}</span>
                 </div>
                 <div>
                   <span className="text-gray-600">Spent: </span>
-                  <span className="font-semibold text-green-600">${customer.totalSpent}</span>
+                  <span className="font-semibold text-green-600">${customer.TotalSpent.toFixed(2)}</span>
                 </div>
                 <div>
                   <span className="text-gray-600">Last visit: </span>
-                  <span className="font-medium">{customer.lastVisit}</span>
+                  <span className="font-medium">{formatDate(customer.LastVisit)}</span>
                 </div>
               </div>
+
+              {customer.Notes && (
+                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-700"><strong>Notes:</strong> {customer.Notes}</p>
+                </div>
+              )}
             </div>
           ))}
         </div>
 
-        {filteredCustomers.length === 0 && (
+        {filteredCustomers.length === 0 && !loading && (
           <div className="p-12 text-center">
             <p className="text-gray-500 text-lg">No customers found matching your search.</p>
           </div>
@@ -268,7 +289,7 @@ export const CustomerManagement = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Customer</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete {customerToDelete?.name}? This action cannot be undone.
+              Are you sure you want to delete {customerToDelete?.Name}? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
