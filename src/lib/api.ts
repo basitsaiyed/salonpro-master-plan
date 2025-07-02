@@ -54,32 +54,32 @@ class ApiClient {
   }
 
   // Customer methods
-  async getCustomers() {
-    return this.request('/api/customers');
+  async getCustomers(): Promise<Customer[]> {
+    return this.request<Customer[]>('/api/customers');
   }
 
-  async createCustomer(customerData: CreateCustomerInput) {
-    return this.request('/api/customers', {
+  async createCustomer(customerData: CreateCustomerInput): Promise<Customer> {
+    return this.request<Customer>('/api/customers', {
       method: 'POST',
       body: JSON.stringify(customerData),
     });
   }
 
-  async updateCustomer(id: string, customerData: UpdateCustomerInput) {
-    return this.request(`/api/customers/${id}`, {
+  async updateCustomer(id: string, customerData: UpdateCustomerInput): Promise<Customer> {
+    return this.request<Customer>(`/api/customers/${id}`, {
       method: 'PUT',
       body: JSON.stringify(customerData),
     });
   }
 
-  async deleteCustomer(id: string) {
-    return this.request(`/api/customers/${id}`, {
+  async deleteCustomer(id: string): Promise<void> {
+    return this.request<void>(`/api/customers/${id}`, {
       method: 'DELETE',
     });
   }
 
-  async getCustomer(id: string) {
-    return this.request(`/api/customers/${id}`);
+  async getCustomer(id: string): Promise<Customer> {
+    return this.request<Customer>(`/api/customers/${id}`);
   }
 
   // Services methods
