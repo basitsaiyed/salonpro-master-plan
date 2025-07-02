@@ -38,11 +38,11 @@ const Register = () => {
     setIsLoading(true);
     
     const success = await register({
-      name: formData.ownerName,
+      owner: formData.ownerName,
       email: formData.email,
       password: formData.password,
       phone: formData.phone,
-      salon_name: formData.salonName
+      salonName: formData.salonName
     });
     
     if (success) {
