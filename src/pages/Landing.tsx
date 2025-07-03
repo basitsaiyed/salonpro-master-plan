@@ -90,12 +90,12 @@ const Landing = () => {
             </div>
             <div className="flex items-center space-x-4">
               <Link to="/login">
-                <Button variant="ghost" className="text-slate-600 hover:text-slate-900">
+                <Button variant="ghost" className="text-slate-600 hover:text-white">
                   Sign In
                 </Button>
               </Link>
               <Link to="/register">
-                <Button className="bg-gradient-elegant hover:opacity-90 text-white">
+                <Button className="bg-gradient-elegant hover:opacity-90 text-slate-600 hover:text-white">
                   Get Started
                 </Button>
               </Link>
