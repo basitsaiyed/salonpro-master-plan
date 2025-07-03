@@ -1,13 +1,13 @@
-
 import React, { createContext, useContext, useEffect, ReactNode, useState } from 'react';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { loginUser, registerUser, getCurrentUser, logout as logoutAction } from '@/store/authSlice';
 import { useToast } from '@/hooks/use-toast';
+import { User } from '@/lib/api';
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: unknown;
+  user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
   register: (userData: unknown) => Promise<boolean>;
   logout: () => void;

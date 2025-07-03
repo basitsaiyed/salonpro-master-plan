@@ -145,3 +145,4 @@ export const AppSidebar = ({ activeTab, onTabChange }: AppSidebarProps) => {
     </Sidebar>
   );
 };
+

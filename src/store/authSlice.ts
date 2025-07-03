@@ -1,4 +1,5 @@
 
+
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { apiClient, User } from '@/lib/api';
 
@@ -18,24 +19,39 @@ const initialState: AuthState = {
   error: null,
 };
 
+interface LoginResponse {
+  user: User;
+  token: string;
+}
+
+interface RegisterResponse {
+  user: User;
+  token: string;
+}
+
+interface AuthError {
+  message: string;
+  status?: number;
+}
+
 // Async thunks
-export const loginUser = createAsyncThunk(
+export const loginUser = createAsyncThunk<LoginResponse, { email: string; password: string }>(
   'auth/login',
-  async ({ email, password }: { email: string; password: string }) => {
+  async ({ email, password }) => {
     const response = await apiClient.login(email, password);
     return response;
   }
 );
 
-export const registerUser = createAsyncThunk(
+export const registerUser = createAsyncThunk<RegisterResponse, unknown>(
   'auth/register',
-  async (userData: unknown) => {
+  async (userData) => {
     const response = await apiClient.register(userData);
     return response;
   }
 );
 
-export const getCurrentUser = createAsyncThunk(
+export const getCurrentUser = createAsyncThunk<User, void, { rejectValue: AuthError }>(
   'auth/getCurrentUser',
   async (_, { rejectWithValue }) => {
     try {
@@ -130,7 +146,7 @@ const authSlice = createSlice({
         state.loading = true;
       })
       .addCase(getCurrentUser.fulfilled, (state, action) => {
-        state.user = action.payload.user || action.payload;
+        state.user = action.payload;
         state.isAuthenticated = true;
         state.loading = false;
         state.error = null;
@@ -150,3 +166,4 @@ const authSlice = createSlice({
 
 export const { logout } = authSlice.actions;
 export default authSlice.reducer;
+
