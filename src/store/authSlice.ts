@@ -13,7 +13,7 @@ interface AuthState {
 const initialState: AuthState = {
   isAuthenticated: false,
   user: null,
-  token: localStorage.getItem('auth_token'),
+  token: localStorage.getItem('token'),
   loading: false,
   error: null,
 };
@@ -37,9 +37,39 @@ export const registerUser = createAsyncThunk(
 
 export const getCurrentUser = createAsyncThunk(
   'auth/getCurrentUser',
-  async () => {
-    const user = await apiClient.getCurrentUser();
-    return user;
+  async (_, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        throw new Error('No token found');
+      }
+
+      // Make sure your API call includes the token
+      const response = await fetch('/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          // Token is invalid
+          localStorage.removeItem('token');
+          throw new Error('Invalid token');
+        }
+        throw new Error('Failed to fetch user');
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error: any) {
+      return rejectWithValue({
+        message: error.message,
+        status: error.status || 500,
+      });
+    }
   }
 );
 
@@ -47,88 +77,48 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    setToken: (state, action: PayloadAction<string>) => {
-      state.token = action.payload;
-      localStorage.setItem('auth_token', action.payload);
-    },
     logout: (state) => {
-      state.isAuthenticated = false;
+      localStorage.removeItem('token');
       state.user = null;
       state.token = null;
-      state.error = null;
-      localStorage.removeItem('auth_token');
-    },
-    clearError: (state) => {
+      state.isAuthenticated = false;
       state.error = null;
     },
   },
   extraReducers: (builder) => {
     builder
       // Login cases
-      .addCase(loginUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
       .addCase(loginUser.fulfilled, (state, action) => {
-        state.loading = false;
+        state.user = action.payload.user;
+        state.token = action.payload.token;
         state.isAuthenticated = true;
-        
-        // Handle different response formats
-        if (action.payload && typeof action.payload === 'object' && 'user' in action.payload) {
-          state.user = action.payload.user as User;
-        }
-        
-        if (action.payload && typeof action.payload === 'object' && 'token' in action.payload) {
-          state.token = action.payload.token as string;
-          localStorage.setItem('auth_token', action.payload.token as string);
-        }
-      })
-      .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Login failed';
-        state.isAuthenticated = false;
-        state.user = null;
-      })
-      // Register cases
-      .addCase(registerUser.pending, (state) => {
-        state.loading = true;
         state.error = null;
-      })
-      .addCase(registerUser.fulfilled, (state, action) => {
-        state.loading = false;
-        state.isAuthenticated = true;
         
-        // Handle different response formats
-        if (action.payload && typeof action.payload === 'object' && 'user' in action.payload) {
-          state.user = action.payload.user as User;
-        }
-        
-        if (action.payload && typeof action.payload === 'object' && 'token' in action.payload) {
-          state.token = action.payload.token as string;
-          localStorage.setItem('auth_token', action.payload.token as string);
-        }
+        // Store token in localStorage
+        localStorage.setItem('token', action.payload.token);
       })
-      .addCase(registerUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'Registration failed';
-        state.isAuthenticated = false;
-        state.user = null;
-      })
-      // Get current user cases
+      
+      // getCurrentUser cases - this is the key part!
       .addCase(getCurrentUser.pending, (state) => {
         state.loading = true;
       })
       .addCase(getCurrentUser.fulfilled, (state, action) => {
-        state.loading = false;
+        state.user = action.payload.user || action.payload;
         state.isAuthenticated = true;
-        state.user = action.payload;
-      })
-      .addCase(getCurrentUser.rejected, (state) => {
         state.loading = false;
-        state.isAuthenticated = false;
+        state.error = null;
+      })
+      .addCase(getCurrentUser.rejected, (state, action) => {
+        // This is crucial - when getCurrentUser fails, clean up
         state.user = null;
         state.token = null;
-        localStorage.removeItem('auth_token');
+        state.isAuthenticated = false;
+        state.loading = false;
+        state.error = action.payload?.message || 'Authentication failed';
+        
+        // Remove invalid token
+        localStorage.removeItem('token');
       });
   },
 });
