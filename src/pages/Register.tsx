@@ -38,7 +38,7 @@ const Register = () => {
     setIsLoading(true);
     
     const success = await register({
-      owner: formData.ownerName,
+      name: formData.ownerName,
       email: formData.email,
       password: formData.password,
       phone: formData.phone,
