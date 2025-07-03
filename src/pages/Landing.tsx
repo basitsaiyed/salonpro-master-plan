@@ -90,12 +90,12 @@ const Landing = () => {
             </div>
             <div className="flex items-center space-x-4">
               <Link to="/login">
-                <Button variant="ghost" className="text-slate-600 hover:text-slate-900">
+                <Button variant="ghost" className="text-slate-600 hover:text-white">
                   Sign In
                 </Button>
               </Link>
               <Link to="/register">
-                <Button className="bg-gradient-elegant hover:opacity-90 text-white">
+                <Button className="bg-gradient-elegant hover:opacity-90 text-slate-600 hover:text-white">
                   Get Started
                 </Button>
               </Link>
@@ -129,7 +129,7 @@ const Landing = () => {
               <Link to="/register">
                 <Button 
                   size="lg" 
-                  className="bg-gradient-elegant hover:opacity-90 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                  className="bg-gradient-elegant hover:opacity-90 text-black hover:text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 >
                   Start Free Trial
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -138,7 +138,7 @@ const Landing = () => {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="px-8 py-3 text-lg font-semibold border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all duration-200"
+                className="px-8 py-3 text-lg hover:text-black font-semibold border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all duration-200"
               >
                 Watch Demo
               </Button>

@@ -34,12 +34,19 @@ const navItems = [
 ];
 
 export const AppSidebar = ({ activeTab, onTabChange }: AppSidebarProps) => {
-  const { state } = useSidebar();
+  const { state, setOpenMobile } = useSidebar();
   const { user, logout } = useAuth();
   const isCollapsed = state === "collapsed";
 
+  const handleTabChange = (tab: ActiveTab) => {
+    onTabChange(tab);
+    // Close mobile sidebar when a tab is selected
+    setOpenMobile(false);
+  };
+
   const handleLogout = () => {
     logout();
+    setOpenMobile(false);
   };
 
   // Get initials from user name or email
@@ -81,7 +88,7 @@ export const AppSidebar = ({ activeTab, onTabChange }: AppSidebarProps) => {
                 return (
                   <SidebarMenuItem key={item.id}>
                     <SidebarMenuButton
-                      onClick={() => onTabChange(item.id)}
+                      onClick={() => handleTabChange(item.id)}
                       className={`w-full justify-start py-3 px-4 rounded-lg transition-all duration-200 ${
                         isActive
                           ? "bg-primary text-white font-medium"
