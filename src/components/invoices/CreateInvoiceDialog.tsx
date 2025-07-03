@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Plus } from "lucide-react";
 
 interface CreateInvoiceDialogProps {
-  onCreateInvoice: (invoice: any) => void;
+  onCreateInvoice: (invoice: unknown) => void;
 }
 
 const mockCustomers = [

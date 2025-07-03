@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
 
 interface AddServiceDialogProps {
-  onAddService: (service: any) => void;
+  onAddService: (service: unknown) => void;
 }
 
 export const AddServiceDialog = ({ onAddService }: AddServiceDialogProps) => {

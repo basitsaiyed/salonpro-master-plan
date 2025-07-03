@@ -33,6 +33,7 @@ export const CustomerManagement = () => {
   // Load customers from API
   useEffect(() => {
     loadCustomers();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadCustomers = async () => {

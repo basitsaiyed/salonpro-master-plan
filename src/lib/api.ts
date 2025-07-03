@@ -45,7 +45,7 @@ class ApiClient {
     });
   }
 
-  async register(userData: any) {
+  async register(userData: unknown) {
     return this.request('/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData),
@@ -91,14 +91,14 @@ class ApiClient {
     return this.request('/api/services');
   }
 
-  async createService(serviceData: any) {
+  async createService(serviceData: unknown) {
     return this.request('/api/services', {
       method: 'POST',
       body: JSON.stringify(serviceData),
     });
   }
 
-  async updateService(id: string, serviceData: any) {
+  async updateService(id: string, serviceData: unknown) {
     return this.request(`/api/services/${id}`, {
       method: 'PUT',
       body: JSON.stringify(serviceData),
@@ -116,7 +116,7 @@ class ApiClient {
     return this.request('/api/invoices');
   }
 
-  async createInvoice(invoiceData: any) {
+  async createInvoice(invoiceData: unknown) {
     return this.request('/api/invoices', {
       method: 'POST',
       body: JSON.stringify(invoiceData),
