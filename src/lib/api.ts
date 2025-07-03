@@ -1,6 +1,8 @@
+import { store } from '@/store';
+
 const API_BASE_URL = 'http://localhost:8080';
 
-// API client with cookie support
+// API client with token support
 class ApiClient {
   private baseURL: string;
 
@@ -8,16 +10,23 @@ class ApiClient {
     this.baseURL = baseURL;
   }
 
+  private getAuthToken(): string | null {
+    const state = store.getState();
+    return state.auth.token;
+  }
+
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
+    const token = this.getAuthToken();
     
     const config: RequestInit = {
       credentials: 'include', // Important for cookies
       headers: {
         'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
         ...options.headers,
       },
       ...options,

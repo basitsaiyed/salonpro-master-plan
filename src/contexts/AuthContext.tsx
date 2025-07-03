@@ -1,16 +1,13 @@
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { apiClient, User } from '@/lib/api';
+import React, { createContext, useContext, useEffect, ReactNode } from 'react';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { loginUser, registerUser, getCurrentUser, logout as logoutAction } from '@/store/authSlice';
 import { useToast } from '@/hooks/use-toast';
-
-interface AuthResponse {
-  user: User;
-  message?: string;
-}
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: User | null;
+  user: any;
   login: (email: string, password: string) => Promise<boolean>;
   register: (userData: unknown) => Promise<boolean>;
   logout: () => void;
@@ -33,46 +30,20 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useAppDispatch();
+  const { isAuthenticated, user, loading, token } = useAppSelector((state) => state.auth);
   const { toast } = useToast();
 
   // Check authentication status on app load
   useEffect(() => {
-    checkAuthStatus();
-  }, []);
-
-  const checkAuthStatus = async () => {
-    try {
-      // Try to fetch current user to check if token is valid
-      const currentUser = await apiClient.getCurrentUser();
-      setIsAuthenticated(true);
-      setUser(currentUser);
-    } catch (error) {
-      setIsAuthenticated(false);
-      setUser(null);
-    } finally {
-      setLoading(false);
+    if (token && !isAuthenticated) {
+      dispatch(getCurrentUser());
     }
-  };
+  }, [dispatch, token, isAuthenticated]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const response = await apiClient.login(email, password);
-      
-      // Type guard to check if response has user property
-      if (response && typeof response === 'object' && 'user' in response) {
-        const authResponse = response as AuthResponse;
-        setIsAuthenticated(true);
-        setUser(authResponse.user);
-      } else {
-        // If no user in response, fetch current user
-        const currentUser = await apiClient.getCurrentUser();
-        setIsAuthenticated(true);
-        setUser(currentUser);
-      }
-      
+      await dispatch(loginUser({ email, password })).unwrap();
       toast({
         title: "Login Successful",
         description: "Welcome back!",
@@ -90,20 +61,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const register = async (userData: unknown): Promise<boolean> => {
     try {
-      const response = await apiClient.register(userData);
-      
-      // Type guard to check if response has user property
-      if (response && typeof response === 'object' && 'user' in response) {
-        const authResponse = response as AuthResponse;
-        setIsAuthenticated(true);
-        setUser(authResponse.user);
-      } else {
-        // If no user in response, fetch current user
-        const currentUser = await apiClient.getCurrentUser();
-        setIsAuthenticated(true);
-        setUser(currentUser);
-      }
-      
+      await dispatch(registerUser(userData)).unwrap();
       toast({
         title: "Registration Successful",
         description: "Welcome to SalonPro!",
@@ -120,10 +78,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const logout = () => {
-    setIsAuthenticated(false);
-    setUser(null);
-    // Clear any stored user data
-    localStorage.clear();
+    dispatch(logoutAction());
     toast({
       title: "Logged Out",
       description: "You have been successfully logged out.",
