@@ -1,3 +1,4 @@
+
 import { store } from '@/store';
 
 const API_BASE_URL = 'http://localhost:8080';
@@ -47,15 +48,15 @@ class ApiClient {
   }
 
   // Auth methods
-  async login(email: string, password: string) {
-    return this.request('/auth/login', {
+  async login(email: string, password: string): Promise<LoginResponse> {
+    return this.request<LoginResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ identifier: email, password }),
     });
   }
 
-  async register(userData: unknown) {
-    return this.request('/auth/register', {
+  async register(userData: unknown): Promise<RegisterResponse> {
+    return this.request<RegisterResponse>('/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData),
     });
@@ -181,6 +182,17 @@ export interface User {
   email: string;
   name: string;
   salonName?: string;
+}
+
+// Auth response interfaces
+export interface LoginResponse {
+  user: User;
+  token: string;
+}
+
+export interface RegisterResponse {
+  user: User;
+  token: string;
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);
