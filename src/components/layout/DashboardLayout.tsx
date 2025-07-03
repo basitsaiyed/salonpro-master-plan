@@ -3,7 +3,6 @@ import { ReactNode } from "react";
 import { ActiveTab } from "@/pages/Index";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
-import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 
 interface DashboardLayoutProps {
@@ -27,11 +26,7 @@ export const DashboardLayout = ({ children, activeTab, onTabChange }: DashboardL
               </div>
               <h1 className="text-lg font-bold text-slate-800">SalonPro</h1>
             </div>
-            <SidebarTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Menu className="h-4 w-4" />
-              </Button>
-            </SidebarTrigger>
+            <SidebarTrigger className="h-8 w-8" />
           </header>
 
           {/* Main Content */}
