@@ -57,12 +57,14 @@ export const EditCustomerDialog = ({ customer, open, onOpenChange, onEditCustome
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (customer) {
+      const toISO = (date: string) => date ? new Date(date).toISOString() : undefined;
+
       const updateData: UpdateCustomerInput = {
         name: formData.name || undefined,
         phone: formData.phone || undefined,
         email: formData.email || undefined,
-        birthday: formData.birthday || undefined,
-        anniversary: formData.anniversary || undefined,
+        birthday: toISO(formData.birthday),
+        anniversary: toISO(formData.anniversary),
         notes: formData.notes || undefined,
         isActive: formData.isActive
       };

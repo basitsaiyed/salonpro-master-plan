@@ -138,14 +138,6 @@ export const CustomerManagement = () => {
     return new Date(dateString).toLocaleDateString();
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading customers...</div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6 p-6">
       {/* Header */}
@@ -169,10 +161,10 @@ export const CustomerManagement = () => {
               className="pl-12 h-12 text-base"
             />
           </div>
-          <Button variant="outline" className="h-12 px-6">
+          {/* <Button variant="outline" className="h-12 px-6">
             <Filter className="h-5 w-5 mr-2" />
             Filters
-          </Button>
+          </Button> */}
         </div>
       </div>
 
@@ -192,86 +184,93 @@ export const CustomerManagement = () => {
         </div>
         
         <div className="divide-y">
-          {filteredCustomers.map((customer) => (
-            <div key={customer.ID} className="p-6 hover:bg-gray-50">
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-4">
-                  <h3 className="text-xl font-semibold text-gray-900">{customer.Name}</h3>
-                  <span className={`inline-block text-sm px-3 py-1 rounded-full ${
-                    customer.IsActive 
-                      ? 'bg-green-100 text-green-700' 
-                      : 'bg-gray-100 text-gray-700'
-                  }`}>
-                    {customer.IsActive ? 'Active' : 'Inactive'}
-                  </span>
-                </div>
-                <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => openEditDialog(customer)}
-                    className="h-10 w-10 p-0"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => openDeleteDialog(customer)}
-                    className="h-10 w-10 p-0 text-red-600 hover:text-red-700 hover:border-red-300"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-6 mb-4">
-                <div className="flex items-center gap-3 text-gray-600">
-                  <Mail className="h-5 w-5" />
-                  <span className="text-base">{customer.Email || 'No email'}</span>
-                </div>
-                
-                <div className="flex items-center gap-3 text-gray-600">
-                  <Phone className="h-5 w-5" />
-                  <span className="text-base">{customer.Phone}</span>
-                </div>
-
-                <div className="flex items-center gap-3 text-gray-600">
-                  <Gift className="h-5 w-5 text-pink-500" />
-                  <span className="text-base">Birthday: {formatDate(customer.Birthday)}</span>
-                </div>
-                
-                <div className="flex items-center gap-3 text-gray-600">
-                  <Heart className="h-5 w-5 text-red-500" />
-                  <span className="text-base">Anniversary: {formatDate(customer.Anniversary)}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-8 text-base">
-                <div>
-                  <span className="text-gray-600">Visits: </span>
-                  <span className="font-semibold">{customer.TotalVisits}</span>
-                </div>
-                <div>
-                  <span className="text-gray-600">Spent: </span>
-                  <span className="font-semibold text-green-600">${customer.TotalSpent.toFixed(2)}</span>
-                </div>
-                <div>
-                  <span className="text-gray-600">Last visit: </span>
-                  <span className="font-medium">{formatDate(customer.LastVisit)}</span>
-                </div>
-              </div>
-
-              {customer.Notes && (
-                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                  <p className="text-sm text-gray-700"><strong>Notes:</strong> {customer.Notes}</p>
-                </div>
-              )}
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-lg">Loading customers...</div>
             </div>
-          ))}
+          ) : (
+            filteredCustomers.map((customer) => (
+              <div key={customer.ID} className="p-6 hover:bg-gray-50">
+                {/* ...customer card content... */}
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-center gap-4">
+                    <h3 className="text-xl font-semibold text-gray-900">{customer.Name}</h3>
+                    <span className={`inline-block text-sm px-3 py-1 rounded-full ${
+                      customer.IsActive 
+                        ? 'bg-green-100 text-green-700' 
+                        : 'bg-gray-100 text-gray-700'
+                    }`}>
+                      {customer.IsActive ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => openEditDialog(customer)}
+                      className="h-10 w-10 p-0"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => openDeleteDialog(customer)}
+                      className="h-10 w-10 p-0 text-red-600 hover:text-red-700 hover:border-red-300"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-6 mb-4">
+                  <div className="flex items-center gap-3 text-gray-600">
+                    <Mail className="h-5 w-5" />
+                    <span className="text-base">{customer.Email || 'No email'}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 text-gray-600">
+                    <Phone className="h-5 w-5" />
+                    <span className="text-base">{customer.Phone}</span>
+                  </div>
+
+                  <div className="flex items-center gap-3 text-gray-600">
+                    <Gift className="h-5 w-5 text-pink-500" />
+                    <span className="text-base">Birthday: {formatDate(customer.Birthday)}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 text-gray-600">
+                    <Heart className="h-5 w-5 text-red-500" />
+                    <span className="text-base">Anniversary: {formatDate(customer.Anniversary)}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-8 text-base">
+                  <div>
+                    <span className="text-gray-600">Visits: </span>
+                    <span className="font-semibold">{customer.TotalVisits}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Spent: </span>
+                    <span className="font-semibold text-green-600">${customer.TotalSpent.toFixed(2)}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Last visit: </span>
+                    <span className="font-medium">{formatDate(customer.LastVisit)}</span>
+                  </div>
+                </div>
+
+                {customer.Notes && (
+                  <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <p className="text-sm text-gray-700"><strong>Notes:</strong> {customer.Notes}</p>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
         </div>
 
-        {filteredCustomers.length === 0 && !loading && (
+        {!loading && filteredCustomers.length === 0 && (
           <div className="p-12 text-center">
             <p className="text-gray-500 text-lg">No customers found matching your search.</p>
           </div>

@@ -33,13 +33,17 @@ export const AddCustomerDialog = ({ onAddCustomer }: AddCustomerDialogProps) => 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Convert date fields to ISO 8601 with time
+    const toISO = (date: string) =>
+    date ? new Date(date).toISOString() : null;
+
     const customerData: CreateCustomerInput = {
       name: formData.name,
       phone: formData.phone,
-      email: formData.email || undefined,
-      birthday: formData.birthday || undefined,
-      anniversary: formData.anniversary || undefined,
-      notes: formData.notes || undefined,
+      email: formData.email ? formData.email : null,
+      birthday: toISO(formData.birthday),
+      anniversary: toISO(formData.anniversary),
+      notes: formData.notes ?? "",
     };
 
     onAddCustomer(customerData);
