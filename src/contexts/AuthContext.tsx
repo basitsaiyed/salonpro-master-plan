@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: any;
+  user: unknown;
   login: (email: string, password: string) => Promise<boolean>;
   register: (userData: unknown) => Promise<boolean>;
   logout: () => void;

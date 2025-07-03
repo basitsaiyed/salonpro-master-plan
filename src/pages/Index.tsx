@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
-import { CustomerManagement } from "@/components/customers/CustomerManagement";
+import { CustomerManagement } from "@/components/customers/CustomerManagement"; 
 import { ServiceManagement } from "@/components/services/ServiceManagement";
 import { InvoiceManagement } from "@/components/invoices/InvoiceManagement";
 import { Reports } from "@/components/reports/Reports";

@@ -91,7 +91,7 @@ const Register = () => {
         
         <Card className="backdrop-blur-sm bg-white/90 border-0 shadow-2xl">
           <CardHeader className="text-center pb-4">
-            <CardTitle className="text-2xl font-semibold text-slate-800">Create Account</CardTitle>
+            <CardTitle className="text-2xl font-semibold text-slate-800 ">Create Account</CardTitle>
             <p className="text-slate-600 text-sm">Start your salon management journey</p>
           </CardHeader>
           <CardContent>
@@ -184,7 +184,7 @@ const Register = () => {
               
               <Button 
                 type="submit" 
-                className="w-full h-12 bg-gradient-elegant hover:opacity-90 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] mt-6"
+                className="w-full h-12 bg-gradient-elegant hover:opacity-90 text-black hover:text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] mt-6"
                 disabled={isLoading}
               >
                 {isLoading ? "Creating Account..." : "Create Account"}
