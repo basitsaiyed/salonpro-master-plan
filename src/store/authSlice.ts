@@ -88,6 +88,9 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     builder
       // Login cases
+      .addCase(loginUser.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.user = action.payload.user;
         state.token = action.payload.token;
@@ -98,8 +101,31 @@ const authSlice = createSlice({
         // Store token in localStorage
         localStorage.setItem('token', action.payload.token);
       })
+      .addCase(loginUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Login failed';
+      })
       
-      // getCurrentUser cases - this is the key part!
+      // Register cases
+      .addCase(registerUser.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(registerUser.fulfilled, (state, action) => {
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+        state.isAuthenticated = true;
+        state.loading = false;
+        state.error = null;
+        
+        // Store token in localStorage
+        localStorage.setItem('token', action.payload.token);
+      })
+      .addCase(registerUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Registration failed';
+      })
+      
+      // getCurrentUser cases
       .addCase(getCurrentUser.pending, (state) => {
         state.loading = true;
       })
@@ -110,7 +136,6 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(getCurrentUser.rejected, (state, action) => {
-        // This is crucial - when getCurrentUser fails, clean up
         state.user = null;
         state.token = null;
         state.isAuthenticated = false;
@@ -123,5 +148,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { setToken, logout, clearError } = authSlice.actions;
+export const { logout } = authSlice.actions;
 export default authSlice.reducer;

@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, ReactNode, useState } from 'react';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -39,8 +40,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   useEffect(() => {
     const initializeAuth = async () => {
       console.log('🔍 AuthContext: Initializing auth...');
-      console.log('📱 Token from store:', token ? 'Present' : 'Not found');
-      console.log('🔐 isAuthenticated:', isAuthenticated);
       
       const storedToken = localStorage.getItem('token');
       console.log('💾 Token from localStorage:', storedToken ? 'Present' : 'Not found');
@@ -59,26 +58,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             console.log('🚫 Token invalid, cleaning up...');
             localStorage.removeItem('token');
             dispatch(logoutAction());
-            
-            toast({
-              title: "Session Expired",
-              description: "Please log in again.",
-              variant: "destructive",
-            });
           }
         }
-      } else if (!storedToken && !isAuthenticated) {
-        console.log('🔓 No token found, user not authenticated');
-      } else if (isAuthenticated) {
-        console.log('✅ Already authenticated');
+      } else {
+        console.log('🔓 No token found or already authenticated');
       }
       
+      // Always set initialized to true after checking
       setIsInitialized(true);
       console.log('🎯 Auth initialization complete');
     };
 
     initializeAuth();
-  }, [dispatch, token, isAuthenticated, toast]);
+  }, [dispatch, isAuthenticated]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
@@ -130,18 +122,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       description: "You have been successfully logged out.",
     });
   };
-
-  // Don't render children until auth is initialized
-  if (!isInitialized) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Initializing...</p>
-        </div>
-      </div>
-    );
-  }
 
   const value: AuthContextType = {
     isAuthenticated,
