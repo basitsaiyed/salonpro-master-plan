@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Scissors, Home, Users, FileText, BarChart3, Settings, LogOut, User } from "lucide-react";
 import { ActiveTab } from "@/pages/Index";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Sidebar,
   SidebarContent,
@@ -34,12 +35,27 @@ const navItems = [
 
 export const AppSidebar = ({ activeTab, onTabChange }: AppSidebarProps) => {
   const { state } = useSidebar();
+  const { user, logout } = useAuth();
   const isCollapsed = state === "collapsed";
 
   const handleLogout = () => {
-    // Add logout logic here
-    console.log("Logging out...");
-    // You can add actual logout functionality here
+    logout();
+  };
+
+  // Get initials from user name or email
+  const getInitials = (name?: string, email?: string) => {
+    if (name) {
+      return name
+        .split(' ')
+        .map(word => word.charAt(0))
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
+    }
+    if (email) {
+      return email.charAt(0).toUpperCase();
+    }
+    return 'SO';
   };
 
   return (
@@ -91,13 +107,17 @@ export const AppSidebar = ({ activeTab, onTabChange }: AppSidebarProps) => {
           <div className="flex items-center gap-3 px-2">
             <Avatar className="h-8 w-8">
               <AvatarFallback className="bg-primary text-white text-sm">
-                SO
+                {getInitials(user?.name, user?.email)}
               </AvatarFallback>
             </Avatar>
             {!isCollapsed && (
               <div className="flex-1 min-w-0">
-                <p className="text-slate-800 font-medium text-sm truncate">Salon Owner</p>
-                <p className="text-slate-600 text-xs truncate">owner@salon.com</p>
+                <p className="text-slate-800 font-medium text-sm truncate">
+                  {user?.name || user?.salonName || 'Salon Owner'}
+                </p>
+                <p className="text-slate-600 text-xs truncate">
+                  {user?.email || 'owner@salon.com'}
+                </p>
               </div>
             )}
           </div>

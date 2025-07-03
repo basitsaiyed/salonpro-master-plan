@@ -1,13 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { apiClient } from '@/lib/api';
+import { apiClient, User } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
-
-interface User {
-  id: string;
-  email: string;
-  name?: string;
-}
 
 interface AuthResponse {
   user: User;
@@ -50,9 +44,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const checkAuthStatus = async () => {
     try {
-      // Try to make an authenticated request to check if token is valid
-      await apiClient.getCustomers();
+      // Try to fetch current user to check if token is valid
+      const currentUser = await apiClient.getCurrentUser();
       setIsAuthenticated(true);
+      setUser(currentUser);
     } catch (error) {
       setIsAuthenticated(false);
       setUser(null);
@@ -63,11 +58,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const response = await apiClient.login(email, password) as AuthResponse;
-      setIsAuthenticated(true);
+      const response = await apiClient.login(email, password);
+      
+      // Type guard to check if response has user property
       if (response && typeof response === 'object' && 'user' in response) {
-        setUser(response.user);
+        const authResponse = response as AuthResponse;
+        setIsAuthenticated(true);
+        setUser(authResponse.user);
+      } else {
+        // If no user in response, fetch current user
+        const currentUser = await apiClient.getCurrentUser();
+        setIsAuthenticated(true);
+        setUser(currentUser);
       }
+      
       toast({
         title: "Login Successful",
         description: "Welcome back!",
@@ -85,11 +89,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const register = async (userData: any): Promise<boolean> => {
     try {
-      const response = await apiClient.register(userData) as AuthResponse;
-      setIsAuthenticated(true);
+      const response = await apiClient.register(userData);
+      
+      // Type guard to check if response has user property
       if (response && typeof response === 'object' && 'user' in response) {
-        setUser(response.user);
+        const authResponse = response as AuthResponse;
+        setIsAuthenticated(true);
+        setUser(authResponse.user);
+      } else {
+        // If no user in response, fetch current user
+        const currentUser = await apiClient.getCurrentUser();
+        setIsAuthenticated(true);
+        setUser(currentUser);
       }
+      
       toast({
         title: "Registration Successful",
         description: "Welcome to SalonPro!",

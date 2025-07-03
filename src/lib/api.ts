@@ -1,4 +1,3 @@
-
 const API_BASE_URL = 'http://localhost:8080';
 
 // API client with cookie support
@@ -51,6 +50,11 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify(userData),
     });
+  }
+
+  // Get current user profile
+  async getCurrentUser(): Promise<User> {
+    return this.request<User>('/auth/me');
   }
 
   // Customer methods
@@ -160,6 +164,14 @@ export interface Customer {
   IsActive: boolean;
   CreatedAt: string;
   UpdatedAt: string;
+}
+
+// User interface for authentication
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  salonName?: string;
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);
