@@ -17,7 +17,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
@@ -36,37 +35,22 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const { toast } = useToast();
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Check authentication status on app load
   useEffect(() => {
     const initializeAuth = async () => {
-      console.log('🔍 AuthContext: Initializing auth...');
-      
       const storedToken = localStorage.getItem('token');
-      console.log('💾 Token from localStorage:', storedToken ? 'Present' : 'Not found');
-      
+
       if (storedToken && !isAuthenticated) {
-        console.log('🔄 Token exists but not authenticated, fetching user...');
-        
         try {
-          const result = await dispatch(getCurrentUser()).unwrap();
-          console.log('✅ User fetched successfully:', result);
+          await dispatch(getCurrentUser()).unwrap();
         } catch (error: any) {
-          console.error('❌ Failed to fetch user:', error);
-          
-          // If the token is invalid, remove it
           if (error.status === 401 || error.status === 403) {
-            console.log('🚫 Token invalid, cleaning up...');
             localStorage.removeItem('token');
             dispatch(logoutAction());
           }
         }
-      } else {
-        console.log('🔓 No token found or already authenticated');
       }
-      
-      // Always set initialized to true after checking
+
       setIsInitialized(true);
-      console.log('🎯 Auth initialization complete');
     };
 
     initializeAuth();
@@ -74,16 +58,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      console.log('🔐 Attempting login for:', email);
       await dispatch(loginUser({ email, password })).unwrap();
       toast({
         title: "Login Successful",
         description: "Welcome back!",
       });
-      console.log('✅ Login successful');
       return true;
     } catch (error: any) {
-      console.error('❌ Login failed:', error);
       toast({
         title: "Login Failed",
         description: error.message || "Invalid credentials. Please try again.",
@@ -95,16 +76,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const register = async (userData: unknown): Promise<boolean> => {
     try {
-      console.log('📝 Attempting registration...');
       await dispatch(registerUser(userData)).unwrap();
       toast({
         title: "Registration Successful",
         description: "Welcome to SalonPro!",
       });
-      console.log('✅ Registration successful');
       return true;
     } catch (error: any) {
-      console.error('❌ Registration failed:', error);
       toast({
         title: "Registration Failed",
         description: error.message || "Please check your information and try again.",
@@ -115,7 +93,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const logout = () => {
-    console.log('🚪 Logging out user...');
     dispatch(logoutAction());
     toast({
       title: "Logged Out",

@@ -10,14 +10,6 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { isAuthenticated, loading, isInitialized } = useAuth();
   const location = useLocation();
 
-  console.log('🛡️ ProtectedRoute check:', {
-    isAuthenticated,
-    loading,
-    isInitialized,
-    currentPath: location.pathname
-  });
-
-  // Show loading while initializing auth or during auth operations
   if (!isInitialized || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -29,13 +21,9 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
 
-  // If not authenticated, redirect to login with return url
   if (!isAuthenticated) {
-    console.log('🚫 Not authenticated, redirecting to login');
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // If authenticated, render the protected content
-  console.log('✅ Authenticated, rendering protected content');
   return <>{children}</>;
 };
