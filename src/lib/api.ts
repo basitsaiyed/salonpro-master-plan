@@ -1,4 +1,3 @@
-
 import { store } from '@/store';
 
 const API_BASE_URL = 'http://localhost:8080';
@@ -138,8 +137,8 @@ class ApiClient {
   }
 
   // Reports methods
-  async getReports() {
-    return this.request('/api/reports');
+  async getReports(): Promise<AnalyticsSummary> {
+    return this.request<AnalyticsSummary>('/api/reports');
   }
 }
 
@@ -228,6 +227,38 @@ export interface LoginResponse {
 export interface RegisterResponse {
   user: User;
   token: string;
+}
+
+// Reports interfaces
+export interface ServiceSummary {
+  name: string;
+  count: number;
+  revenue: number;
+}
+
+export interface CustomerSummary {
+  name: string;
+  visits: number;
+  spent: number;
+}
+
+export interface QuickStatistics {
+  totalCustomers: number;
+  totalInvoices: number;
+  avgMonthlyVisits: number;
+  avgOrderValue: number;
+}
+
+export interface AnalyticsSummary {
+  currentMonthRevenue: number;
+  monthGrowth: number;
+  currentQuarterRevenue: number;
+  quarterGrowth: number;
+  currentYearRevenue: number;
+  yearGrowth: number;
+  topServices: ServiceSummary[] | null;
+  topCustomers: CustomerSummary[] | null;
+  quickStats: QuickStatistics;
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);
