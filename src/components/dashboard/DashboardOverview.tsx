@@ -71,34 +71,33 @@ export const DashboardOverview = () => {
   const stats = [
     {
       title: "Total Customers",
-      value: dashboardData.totalCustomers.toString(),
+      value: (dashboardData.totalCustomers ?? 0).toString(),
       icon: Users,
       color: "text-blue-600",
       bgColor: "bg-blue-100"
     },
     {
       title: "This Month's Revenue",
-      value: `₹${dashboardData.monthlyRevenue.toFixed(0)}`,
+      value: `₹${dashboardData.monthlyRevenue?.toFixed(0) ?? "0"}`,
       icon: TrendingUp,
       color: "text-green-600",
       bgColor: "bg-green-100"
     },
     {
       title: "Total Invoices",
-      value: dashboardData.totalInvoices.toString(),
+      value: (dashboardData.totalInvoices ?? 0).toString(),
       icon: FileText,
       color: "text-purple-600",
       bgColor: "bg-purple-100"
     },
     {
       title: "Upcoming Birthdays",
-      value: dashboardData.upcomingBirthdays.length.toString(),
+      value: (dashboardData.upcomingBirthdays?.length ?? 0).toString(),
       icon: Calendar,
       color: "text-orange-600",
       bgColor: "bg-orange-100"
     }
   ];
-
   return (
     <div className="space-y-6">
       <div>
