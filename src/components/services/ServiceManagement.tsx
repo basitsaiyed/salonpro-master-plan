@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,89 +7,84 @@ import { Search, Edit, Trash2 } from "lucide-react";
 import { AddServiceDialog } from "./AddServiceDialog";
 import { EditServiceDialog } from "./EditServiceDialog";
 import { useToast } from "@/hooks/use-toast";
-
-interface Service {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  duration: string;
-  category: string;
-}
+import { apiClient, Service, CreateServiceInput, UpdateServiceInput } from "@/lib/api";
 
 export const ServiceManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  
-  // Mock service data with state management
-  const [services, setServices] = useState<Service[]>([
-    {
-      id: "1",
-      name: "Hair Cut & Styling",
-      description: "Professional hair cutting and styling",
-      price: 500,
-      duration: "45 min",
-      category: "Hair"
-    },
-    {
-      id: "2",
-      name: "Beard Trim",
-      description: "Precision beard trimming and shaping",
-      price: 200,
-      duration: "20 min",
-      category: "Grooming"
-    },
-    {
-      id: "3",
-      name: "Facial Treatment",
-      description: "Deep cleansing facial with moisturizing",
-      price: 800,
-      duration: "60 min",
-      category: "Skincare"
-    },
-    {
-      id: "4",
-      name: "Hair Coloring",
-      description: "Professional hair coloring service",
-      price: 2000,
-      duration: "120 min",
-      category: "Hair"
-    },
-    {
-      id: "5",
-      name: "Manicure",
-      description: "Complete nail care and polish",
-      price: 300,
-      duration: "30 min",
-      category: "Nails"
-    }
-  ]);
+
+  // Fetch services on component mount
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        setLoading(true);
+        const servicesData = await apiClient.getServices();
+        setServices(servicesData);
+        console.log('Services loaded:', servicesData);
+      } catch (error) {
+        console.error('Failed to fetch services:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load services. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, [toast]);
 
   const filteredServices = services.filter(service =>
-    service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    service.category.toLowerCase().includes(searchTerm.toLowerCase())
+    service.Name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    service.Category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleAddService = (newService: Service) => {
-    setServices(prev => [...prev, newService]);
-    toast({
-      title: "Service Added",
-      description: `${newService.name} has been added successfully.`,
-    });
+  const handleAddService = async (serviceData: CreateServiceInput) => {
+    try {
+      const newService = await apiClient.createService(serviceData);
+      setServices(prev => [...prev, newService]);
+      toast({
+        title: "Service Added",
+        description: `${newService.Name} has been added successfully.`,
+      });
+      console.log('Service created:', newService);
+    } catch (error) {
+      console.error('Failed to create service:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create service. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleEditService = (updatedService: Service) => {
-    setServices(prev => 
-      prev.map(service => 
-        service.id === updatedService.id ? updatedService : service
-      )
-    );
-    toast({
-      title: "Service Updated",
-      description: `${updatedService.name} has been updated successfully.`,
-    });
+  const handleEditService = async (serviceId: string, serviceData: UpdateServiceInput) => {
+    try {
+      const updatedService = await apiClient.updateService(serviceId, serviceData);
+      setServices(prev => 
+        prev.map(service => 
+          service.ID === serviceId ? updatedService : service
+        )
+      );
+      toast({
+        title: "Service Updated",
+        description: `${updatedService.Name} has been updated successfully.`,
+      });
+      console.log('Service updated:', updatedService);
+    } catch (error) {
+      console.error('Failed to update service:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update service. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const openEditDialog = (service: Service) => {
@@ -96,14 +92,41 @@ export const ServiceManagement = () => {
     setEditDialogOpen(true);
   };
 
-  const handleDeleteService = (serviceId: string) => {
-    const service = services.find(s => s.id === serviceId);
-    setServices(prev => prev.filter(service => service.id !== serviceId));
-    toast({
-      title: "Service Deleted",
-      description: `${service?.name} has been deleted successfully.`,
-    });
+  const handleDeleteService = async (serviceId: string) => {
+    try {
+      const service = services.find(s => s.ID === serviceId);
+      await apiClient.deleteService(serviceId);
+      setServices(prev => prev.filter(service => service.ID !== serviceId));
+      toast({
+        title: "Service Deleted",
+        description: `${service?.Name} has been deleted successfully.`,
+      });
+      console.log('Service deleted:', serviceId);
+    } catch (error) {
+      console.error('Failed to delete service:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete service. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Service Management</h2>
+            <p className="text-gray-600">Manage your salon services and pricing</p>
+          </div>
+        </div>
+        <Card className="p-8 text-center">
+          <p className="text-gray-500">Loading services...</p>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -133,13 +156,13 @@ export const ServiceManagement = () => {
       {/* Service Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredServices.map((service) => (
-          <Card key={service.id} className="hover:shadow-md transition-shadow">
+          <Card key={service.ID} className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex justify-between items-start">
                 <div>
-                  <CardTitle className="text-lg">{service.name}</CardTitle>
+                  <CardTitle className="text-lg">{service.Name}</CardTitle>
                   <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mt-1">
-                    {service.category}
+                    {service.Category}
                   </span>
                 </div>
                 <div className="flex gap-1">
@@ -153,7 +176,7 @@ export const ServiceManagement = () => {
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => handleDeleteService(service.id)}
+                    onClick={() => handleDeleteService(service.ID)}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -161,11 +184,11 @@ export const ServiceManagement = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-600 mb-3">{service.description}</p>
+              <p className="text-sm text-gray-600 mb-3">{service.Description}</p>
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="text-2xl font-bold text-green-600">₹{service.price}</p>
-                  <p className="text-sm text-gray-500">{service.duration}</p>
+                  <p className="text-2xl font-bold text-green-600">₹{service.Price}</p>
+                  <p className="text-sm text-gray-500">{service.Duration} min</p>
                 </div>
               </div>
             </CardContent>
@@ -173,7 +196,7 @@ export const ServiceManagement = () => {
         ))}
       </div>
 
-      {filteredServices.length === 0 && (
+      {filteredServices.length === 0 && !loading && (
         <Card className="p-8 text-center">
           <p className="text-gray-500">No services found matching your search.</p>
         </Card>

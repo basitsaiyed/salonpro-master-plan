@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
+import { CreateServiceInput } from "@/lib/api";
 
 interface AddServiceDialogProps {
-  onAddService: (service: unknown) => void;
+  onAddService: (service: CreateServiceInput) => void;
 }
 
 export const AddServiceDialog = ({ onAddService }: AddServiceDialogProps) => {
@@ -29,12 +30,14 @@ export const AddServiceDialog = ({ onAddService }: AddServiceDialogProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const newService = {
-      id: Date.now().toString(),
-      ...formData,
-      price: Number(formData.price)
+    const serviceData: CreateServiceInput = {
+      name: formData.name,
+      description: formData.description,
+      price: Number(formData.price),
+      duration: Number(formData.duration),
+      category: formData.category
     };
-    onAddService(newService);
+    onAddService(serviceData);
     setFormData({ name: "", description: "", price: "", duration: "", category: "" });
     setOpen(false);
   };
@@ -76,6 +79,8 @@ export const AddServiceDialog = ({ onAddService }: AddServiceDialogProps) => {
             <Input
               id="price"
               type="number"
+              step="0.01"
+              min="0"
               value={formData.price}
               onChange={handleChange}
               placeholder="500"
@@ -83,12 +88,14 @@ export const AddServiceDialog = ({ onAddService }: AddServiceDialogProps) => {
             />
           </div>
           <div>
-            <Label htmlFor="duration">Duration</Label>
+            <Label htmlFor="duration">Duration (minutes)</Label>
             <Input
               id="duration"
+              type="number"
+              min="0"
               value={formData.duration}
               onChange={handleChange}
-              placeholder="45 min"
+              placeholder="45"
               required
             />
           </div>

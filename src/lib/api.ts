@@ -97,28 +97,32 @@ class ApiClient {
   }
 
   // Services methods
-  async getServices() {
-    return this.request('/api/services');
+  async getServices(): Promise<Service[]> {
+    return this.request<Service[]>('/api/services');
   }
 
-  async createService(serviceData: unknown) {
-    return this.request('/api/services', {
+  async createService(serviceData: CreateServiceInput): Promise<Service> {
+    return this.request<Service>('/api/services', {
       method: 'POST',
       body: JSON.stringify(serviceData),
     });
   }
 
-  async updateService(id: string, serviceData: unknown) {
-    return this.request(`/api/services/${id}`, {
+  async updateService(id: string, serviceData: UpdateServiceInput): Promise<Service> {
+    return this.request<Service>(`/api/services/${id}`, {
       method: 'PUT',
       body: JSON.stringify(serviceData),
     });
   }
 
-  async deleteService(id: string) {
-    return this.request(`/api/services/${id}`, {
+  async deleteService(id: string): Promise<void> {
+    return this.request<void>(`/api/services/${id}`, {
       method: 'DELETE',
     });
+  }
+
+  async getService(id: string): Promise<Service> {
+    return this.request<Service>(`/api/services/${id}`);
   }
 
   // Invoices methods
@@ -139,7 +143,38 @@ class ApiClient {
   }
 }
 
-// Types matching your backend
+// Service types matching your backend
+export interface CreateServiceInput {
+  name: string;
+  description?: string;
+  price: number;
+  duration: number; // in minutes
+  category?: string;
+}
+
+export interface UpdateServiceInput {
+  name?: string;
+  description?: string;
+  price?: number;
+  duration?: number; // in minutes
+  category?: string;
+  isActive?: boolean;
+}
+
+export interface Service {
+  ID: string;
+  SalonID: string;
+  Name: string;
+  Description: string;
+  Price: number;
+  Duration: number; // in minutes
+  Category: string;
+  IsActive: boolean;
+  CreatedAt: string;
+  UpdatedAt: string;
+}
+
+// Customer interfaces
 export interface CreateCustomerInput {
   name: string;
   phone: string;

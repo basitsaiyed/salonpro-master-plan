@@ -1,34 +1,39 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-interface Service {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  duration: string;
-  category: string;
-}
+import { Service, UpdateServiceInput } from "@/lib/api";
 
 interface EditServiceDialogProps {
   service: Service | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onEditService: (service: Service) => void;
+  onEditService: (serviceId: string, serviceData: UpdateServiceInput) => void;
 }
 
 export const EditServiceDialog = ({ service, open, onOpenChange, onEditService }: EditServiceDialogProps) => {
   const [formData, setFormData] = useState({
-    name: service?.name || "",
-    description: service?.description || "",
-    price: service?.price.toString() || "",
-    duration: service?.duration || "",
-    category: service?.category || ""
+    name: "",
+    description: "",
+    price: "",
+    duration: "",
+    category: ""
   });
+
+  // Update form data when service changes
+  useEffect(() => {
+    if (service) {
+      setFormData({
+        name: service.Name,
+        description: service.Description,
+        price: service.Price.toString(),
+        duration: service.Duration.toString(),
+        category: service.Category
+      });
+    }
+  }, [service]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -40,12 +45,14 @@ export const EditServiceDialog = ({ service, open, onOpenChange, onEditService }
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (service) {
-      const updatedService = {
-        ...service,
-        ...formData,
-        price: Number(formData.price)
+      const updateData: UpdateServiceInput = {
+        name: formData.name,
+        description: formData.description,
+        price: Number(formData.price),
+        duration: Number(formData.duration),
+        category: formData.category
       };
-      onEditService(updatedService);
+      onEditService(service.ID, updateData);
       onOpenChange(false);
     }
   };
@@ -79,15 +86,19 @@ export const EditServiceDialog = ({ service, open, onOpenChange, onEditService }
             <Input
               id="price"
               type="number"
+              step="0.01"
+              min="0"
               value={formData.price}
               onChange={handleChange}
               required
             />
           </div>
           <div>
-            <Label htmlFor="duration">Duration</Label>
+            <Label htmlFor="duration">Duration (minutes)</Label>
             <Input
               id="duration"
+              type="number"
+              min="0"
               value={formData.duration}
               onChange={handleChange}
               required
