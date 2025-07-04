@@ -1,4 +1,3 @@
-
 import { store } from '@/store';
 
 const API_BASE_URL = 'http://localhost:8080';
@@ -157,6 +156,11 @@ class ApiClient {
   // Reports methods
   async getReports(): Promise<AnalyticsSummary> {
     return this.request<AnalyticsSummary>('/api/reports');
+  }
+
+  // Dashboard methods
+  async getDashboardOverview(): Promise<DashboardOverview> {
+    return this.request<DashboardOverview>('/api/dashboard');
   }
 }
 
@@ -338,6 +342,33 @@ export interface AnalyticsSummary {
   topServices: ServiceSummary[] | null;
   topCustomers: CustomerSummary[] | null;
   quickStats: QuickStatistics;
+}
+
+// Dashboard interfaces
+export interface DashboardOverview {
+  totalCustomers: number;
+  monthlyRevenue: number;
+  totalInvoices: number;
+  upcomingBirthdays: UpcomingEvent[];
+  recentCustomers: RecentCustomer[];
+  upcomingReminders: UpcomingReminder[];
+}
+
+export interface UpcomingEvent {
+  name: string;
+  date: string; // e.g. "Tomorrow", "3 days", etc.
+}
+
+export interface RecentCustomer {
+  name: string;
+  service: string;
+  visitDate: string; // e.g. "Today", "Yesterday"
+}
+
+export interface UpcomingReminder {
+  name: string;
+  type: string; // "Birthday" or "Anniversary"
+  date: string; // e.g. "Tomorrow", "3 days"
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);
