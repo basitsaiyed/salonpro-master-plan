@@ -1,343 +1,351 @@
+import { store } from "@/store"
 
-import { store } from '@/store';
-
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = "http://localhost:8080"
 
 // API client with token support
 class ApiClient {
-  private baseURL: string;
+  private baseURL: string
 
   constructor(baseURL: string) {
-    this.baseURL = baseURL;
+    this.baseURL = baseURL
   }
 
   private getAuthToken(): string | null {
-    const state = store.getState();
-    return state.auth.token;
+    const state = store.getState()
+    return state.auth.token
   }
 
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`;
-    const token = this.getAuthToken();
-    
+    const url = `${this.baseURL}${endpoint}`
+    const token = this.getAuthToken()
+
     const config: RequestInit = {
-      credentials: 'include', // Important for cookies
+      credentials: "include", // Important for cookies
       headers: {
-        'Content-Type': 'application/json',
-        ...(token && { 'Authorization': `Bearer ${token}` }),
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
       ...options,
-    };
+    }
 
     try {
-      const response = await fetch(url, config);
-      
+      const response = await fetch(url, config)
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
-      
-      return await response.json();
+
+      return await response.json()
     } catch (error) {
-      console.error('API request failed:', error);
-      throw error;
+      console.error("API request failed:", error)
+      throw error
     }
   }
 
   // Auth methods
   async login(email: string, password: string): Promise<LoginResponse> {
-    return this.request<LoginResponse>('/auth/login', {
-      method: 'POST',
+    return this.request<LoginResponse>("/auth/login", {
+      method: "POST",
       body: JSON.stringify({ identifier: email, password }),
-    });
+    })
   }
 
   async register(userData: unknown): Promise<RegisterResponse> {
-    return this.request<RegisterResponse>('/auth/register', {
-      method: 'POST',
+    return this.request<RegisterResponse>("/auth/register", {
+      method: "POST",
       body: JSON.stringify(userData),
-    });
+    })
   }
 
   // Get current user profile
   async getCurrentUser(): Promise<User> {
-    return this.request<User>('/auth/me');
+    return this.request<User>("/auth/me")
   }
 
   // Customer methods
   async getCustomers(): Promise<Customer[]> {
-    return this.request<Customer[]>('/api/customers');
+    return this.request<Customer[]>("/api/customers")
   }
 
   async createCustomer(customerData: CreateCustomerInput): Promise<Customer> {
-    return this.request<Customer>('/api/customers', {
-      method: 'POST',
+    return this.request<Customer>("/api/customers", {
+      method: "POST",
       body: JSON.stringify(customerData),
-    });
+    })
   }
 
-  async updateCustomer(id: string, customerData: UpdateCustomerInput): Promise<Customer> {
+  async updateCustomer(
+    id: string,
+    customerData: UpdateCustomerInput
+  ): Promise<Customer> {
     return this.request<Customer>(`/api/customers/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(customerData),
-    });
+    })
   }
 
   async deleteCustomer(id: string): Promise<void> {
     return this.request<void>(`/api/customers/${id}`, {
-      method: 'DELETE',
-    });
+      method: "DELETE",
+    })
   }
 
   async getCustomer(id: string): Promise<Customer> {
-    return this.request<Customer>(`/api/customers/${id}`);
+    return this.request<Customer>(`/api/customers/${id}`)
   }
 
   // Services methods
   async getServices(): Promise<Service[]> {
-    return this.request<Service[]>('/api/services');
+    return this.request<Service[]>("/api/services")
   }
 
   async createService(serviceData: CreateServiceInput): Promise<Service> {
-    return this.request<Service>('/api/services', {
-      method: 'POST',
+    return this.request<Service>("/api/services", {
+      method: "POST",
       body: JSON.stringify(serviceData),
-    });
+    })
   }
 
-  async updateService(id: string, serviceData: UpdateServiceInput): Promise<Service> {
+  async updateService(
+    id: string,
+    serviceData: UpdateServiceInput
+  ): Promise<Service> {
     return this.request<Service>(`/api/services/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(serviceData),
-    });
+    })
   }
 
   async deleteService(id: string): Promise<void> {
     return this.request<void>(`/api/services/${id}`, {
-      method: 'DELETE',
-    });
+      method: "DELETE",
+    })
   }
 
   async getService(id: string): Promise<Service> {
-    return this.request<Service>(`/api/services/${id}`);
+    return this.request<Service>(`/api/services/${id}`)
   }
 
   // Invoices methods
   async getInvoices(): Promise<Invoice[]> {
-    return this.request<Invoice[]>('/api/invoices');
+    return this.request<Invoice[]>("/api/invoices")
   }
 
   async createInvoice(invoiceData: CreateInvoiceInput): Promise<Invoice> {
-    return this.request<Invoice>('/api/invoices', {
-      method: 'POST',
+    return this.request<Invoice>("/api/invoices", {
+      method: "POST",
       body: JSON.stringify(invoiceData),
-    });
+    })
   }
 
-  async updateInvoice(id: string, invoiceData: UpdateInvoiceInput): Promise<Invoice> {
+  async updateInvoice(
+    id: string,
+    invoiceData: UpdateInvoiceInput
+  ): Promise<Invoice> {
     return this.request<Invoice>(`/api/invoices/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(invoiceData),
-    });
+    })
   }
 
   async deleteInvoice(id: string): Promise<void> {
     return this.request<void>(`/api/invoices/${id}`, {
-      method: 'DELETE',
-    });
+      method: "DELETE",
+    })
   }
 
   async getInvoice(id: string): Promise<Invoice> {
-    return this.request<Invoice>(`/api/invoices/${id}`);
+    return this.request<Invoice>(`/api/invoices/${id}`)
   }
 
   // Reports methods
   async getReports(): Promise<AnalyticsSummary> {
-    return this.request<AnalyticsSummary>('/api/reports');
+    return this.request<AnalyticsSummary>("/api/reports")
   }
 }
 
 // Service types matching your backend
 export interface CreateServiceInput {
-  name: string;
-  description?: string;
-  price: number;
-  duration: number; // in minutes
-  category?: string;
+  name: string
+  description?: string
+  price: number
+  duration: number // in minutes
+  category?: string
 }
 
 export interface UpdateServiceInput {
-  name?: string;
-  description?: string;
-  price?: number;
-  duration?: number; // in minutes
-  category?: string;
-  isActive?: boolean;
+  name?: string
+  description?: string
+  price?: number
+  duration?: number // in minutes
+  category?: string
+  isActive?: boolean
 }
 
 export interface Service {
-  ID: string;
-  SalonID: string;
-  Name: string;
-  Description: string;
-  Price: number;
-  Duration: number; // in minutes
-  Category: string;
-  IsActive: boolean;
-  CreatedAt: string;
-  UpdatedAt: string;
+  ID: string
+  SalonID: string
+  Name: string
+  Description: string
+  Price: number
+  Duration: number // in minutes
+  Category: string
+  IsActive: boolean
+  CreatedAt: string
+  UpdatedAt: string
 }
 
 // Customer interfaces
 export interface CreateCustomerInput {
-  name: string;
-  phone: string;
-  email?: string;
-  birthday?: string; // ISO date string
-  anniversary?: string; // ISO date string
-  notes?: string;
+  name: string
+  phone: string
+  email?: string
+  birthday?: string // ISO date string
+  anniversary?: string // ISO date string
+  notes?: string
 }
 
 export interface UpdateCustomerInput {
-  name?: string;
-  phone?: string;
-  email?: string;
-  birthday?: string; // ISO date string
-  anniversary?: string; // ISO date string
-  notes?: string;
-  isActive?: boolean;
+  name?: string
+  phone?: string
+  email?: string
+  birthday?: string // ISO date string
+  anniversary?: string // ISO date string
+  notes?: string
+  isActive?: boolean
 }
 
 export interface Customer {
-  ID: string;
-  SalonID: string;
-  Name: string;
-  Phone: string;
-  Email: string;
-  Birthday?: string;
-  Anniversary?: string;
-  Notes: string;
-  TotalVisits: number;
-  TotalSpent: number;
-  LastVisit?: string;
-  IsActive: boolean;
-  CreatedAt: string;
-  UpdatedAt: string;
+  ID: string
+  SalonID: string
+  Name: string
+  Phone: string
+  Email: string
+  Birthday?: string
+  Anniversary?: string
+  Notes: string
+  TotalVisits: number
+  TotalSpent: number
+  LastVisit?: string
+  IsActive: boolean
+  CreatedAt: string
+  UpdatedAt: string
 }
 
 // Invoice interfaces
 export interface InvoiceItemInput {
-  serviceId: string;
-  quantity: number;
+  serviceId: string
+  quantity: number
 }
 
 export interface CreateInvoiceInput {
-  customerId: string;
-  invoiceDate?: string; // ISO date string
-  items: InvoiceItemInput[];
-  discount: number;
-  tax: number;
-  paymentStatus: "paid" | "unpaid" | "partial";
-  paidAmount: number;
-  paymentMethod?: string;
-  notes?: string;
+  customerId: string
+  invoiceDate?: string // ISO date string
+  items: InvoiceItemInput[]
+  discount: number
+  tax: number
+  paymentStatus: "paid" | "unpaid" | "partial"
+  paidAmount: number
+  paymentMethod?: string
+  notes?: string
 }
 
 export interface UpdateInvoiceInput {
-  customerId?: string;
-  invoiceDate?: string; // ISO date string
-  items?: InvoiceItemInput[];
-  discount?: number;
-  tax?: number;
-  paymentStatus?: "paid" | "unpaid" | "partial";
-  paidAmount?: number;
-  paymentMethod?: string;
-  notes?: string;
+  customerId?: string
+  invoiceDate?: string // ISO date string
+  items?: InvoiceItemInput[]
+  discount?: number
+  tax?: number
+  paymentStatus?: "paid" | "unpaid" | "partial"
+  paidAmount?: number
+  paymentMethod?: string
+  notes?: string
 }
 
 export interface InvoiceItem {
-  ID: string;
-  InvoiceID: string;
-  ServiceID: string;
-  ServiceName: string;
-  Quantity: number;
-  UnitPrice: number;
-  TotalPrice: number;
-  CreatedAt: string;
-  UpdatedAt: string;
+  ID: string
+  InvoiceID: string
+  ServiceID: string
+  ServiceName: string
+  Quantity: number
+  UnitPrice: number
+  TotalPrice: number
+  CreatedAt: string
+  UpdatedAt: string
 }
 
 export interface Invoice {
-  ID: string;
-  InvoiceNumber: string;
-  SalonID: string;
-  CustomerID: string;
-  InvoiceDate: string;
-  Subtotal: number;
-  Discount: number;
-  Tax: number;
-  Total: number;
-  PaymentStatus: "paid" | "unpaid" | "partial";
-  PaidAmount: number;
-  PaymentMethod: string;
-  Notes: string;
-  Items: InvoiceItem[];
-  CreatedAt: string;
-  UpdatedAt: string;
+  ID: string
+  InvoiceNumber: string
+  SalonID: string
+  CustomerID: string
+  InvoiceDate: string
+  Subtotal: number
+  Discount: number
+  Tax: number
+  Total: number
+  PaymentStatus: "paid" | "unpaid" | "partial"
+  PaidAmount: number
+  PaymentMethod: string
+  Notes: string
+  Items: InvoiceItem[]
+  CreatedAt: string
+  UpdatedAt: string
 }
 
 // User interface for authentication
 export interface User {
-  id: string;
-  email: string;
-  name: string;
-  salonName?: string;
+  id: string
+  email: string
+  name: string
+  salonName?: string
 }
 
 // Auth response interfaces
 export interface LoginResponse {
-  user: User;
-  token: string;
+  user: User
+  token: string
 }
 
 export interface RegisterResponse {
-  user: User;
-  token: string;
+  user: User
+  token: string
 }
 
 // Reports interfaces
 export interface ServiceSummary {
-  name: string;
-  count: number;
-  revenue: number;
+  name: string
+  count: number
+  revenue: number
 }
 
 export interface CustomerSummary {
-  name: string;
-  visits: number;
-  spent: number;
+  name: string
+  visits: number
+  spent: number
 }
 
 export interface QuickStatistics {
-  totalCustomers: number;
-  totalInvoices: number;
-  avgMonthlyVisits: number;
-  avgOrderValue: number;
+  totalCustomers: number
+  totalInvoices: number
+  avgMonthlyVisits: number
+  avgOrderValue: number
 }
 
 export interface AnalyticsSummary {
-  currentMonthRevenue: number;
-  monthGrowth: number;
-  currentQuarterRevenue: number;
-  quarterGrowth: number;
-  currentYearRevenue: number;
-  yearGrowth: number;
-  topServices: ServiceSummary[] | null;
-  topCustomers: CustomerSummary[] | null;
-  quickStats: QuickStatistics;
+  currentMonthRevenue: number
+  monthGrowth: number
+  currentQuarterRevenue: number
+  quarterGrowth: number
+  currentYearRevenue: number
+  yearGrowth: number
+  topServices: ServiceSummary[] | null
+  topCustomers: CustomerSummary[] | null
+  quickStats: QuickStatistics
 }
 
-export const apiClient = new ApiClient(API_BASE_URL);
+export const apiClient = new ApiClient(API_BASE_URL)

@@ -184,7 +184,7 @@ const Register = () => {
               
               <Button 
                 type="submit" 
-                className="w-full h-12 bg-gradient-elegant hover:opacity-90 text-black hover:text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] mt-6"
+                className="w-full h-12 bg-gradient-elegant hover:opacity-90 hover:bg-indigo-400 text-gray-500 hover:text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] mt-6"
                 disabled={isLoading}
               >
                 {isLoading ? "Creating Account..." : "Create Account"}
