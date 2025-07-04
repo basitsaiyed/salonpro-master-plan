@@ -1,3 +1,4 @@
+
 import { store } from '@/store';
 
 const API_BASE_URL = 'http://localhost:8080';
@@ -125,15 +126,32 @@ class ApiClient {
   }
 
   // Invoices methods
-  async getInvoices() {
-    return this.request('/api/invoices');
+  async getInvoices(): Promise<Invoice[]> {
+    return this.request<Invoice[]>('/api/invoices');
   }
 
-  async createInvoice(invoiceData: unknown) {
-    return this.request('/api/invoices', {
+  async createInvoice(invoiceData: CreateInvoiceInput): Promise<Invoice> {
+    return this.request<Invoice>('/api/invoices', {
       method: 'POST',
       body: JSON.stringify(invoiceData),
     });
+  }
+
+  async updateInvoice(id: string, invoiceData: UpdateInvoiceInput): Promise<Invoice> {
+    return this.request<Invoice>(`/api/invoices/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(invoiceData),
+    });
+  }
+
+  async deleteInvoice(id: string): Promise<void> {
+    return this.request<void>(`/api/invoices/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getInvoice(id: string): Promise<Invoice> {
+    return this.request<Invoice>(`/api/invoices/${id}`);
   }
 
   // Reports methods
@@ -206,6 +224,67 @@ export interface Customer {
   TotalSpent: number;
   LastVisit?: string;
   IsActive: boolean;
+  CreatedAt: string;
+  UpdatedAt: string;
+}
+
+// Invoice interfaces
+export interface InvoiceItemInput {
+  serviceId: string;
+  quantity: number;
+}
+
+export interface CreateInvoiceInput {
+  customerId: string;
+  invoiceDate?: string; // ISO date string
+  items: InvoiceItemInput[];
+  discount: number;
+  tax: number;
+  paymentStatus: "paid" | "unpaid" | "partial";
+  paidAmount: number;
+  paymentMethod?: string;
+  notes?: string;
+}
+
+export interface UpdateInvoiceInput {
+  customerId?: string;
+  invoiceDate?: string; // ISO date string
+  items?: InvoiceItemInput[];
+  discount?: number;
+  tax?: number;
+  paymentStatus?: "paid" | "unpaid" | "partial";
+  paidAmount?: number;
+  paymentMethod?: string;
+  notes?: string;
+}
+
+export interface InvoiceItem {
+  ID: string;
+  InvoiceID: string;
+  ServiceID: string;
+  ServiceName: string;
+  Quantity: number;
+  UnitPrice: number;
+  TotalPrice: number;
+  CreatedAt: string;
+  UpdatedAt: string;
+}
+
+export interface Invoice {
+  ID: string;
+  InvoiceNumber: string;
+  SalonID: string;
+  CustomerID: string;
+  InvoiceDate: string;
+  Subtotal: number;
+  Discount: number;
+  Tax: number;
+  Total: number;
+  PaymentStatus: "paid" | "unpaid" | "partial";
+  PaidAmount: number;
+  PaymentMethod: string;
+  Notes: string;
+  Items: InvoiceItem[];
   CreatedAt: string;
   UpdatedAt: string;
 }

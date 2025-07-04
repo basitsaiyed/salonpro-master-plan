@@ -1,63 +1,73 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Edit, Eye } from "lucide-react";
+import { Search, Edit, Eye, Trash2 } from "lucide-react";
 import { CreateInvoiceDialog } from "./CreateInvoiceDialog";
 import { EditInvoiceDialog } from "./EditInvoiceDialog";
 import { useToast } from "@/hooks/use-toast";
-
-interface Invoice {
-  id: string;
-  invoiceNumber: string;
-  customerName: string;
-  date: string;
-  services: string[];
-  total: number;
-  paymentStatus: "paid" | "unpaid" | "partial";
-}
+import { apiClient, Invoice, CreateInvoiceInput, UpdateInvoiceInput, Customer } from "@/lib/api";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export const InvoiceManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [invoiceToDelete, setInvoiceToDelete] = useState<Invoice | null>(null);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  
-  // Mock invoice data with state management
-  const [invoices, setInvoices] = useState<Invoice[]>([
-    {
-      id: "1",
-      invoiceNumber: "INV-001",
-      customerName: "Priya Sharma",
-      date: "2024-06-28",
-      services: ["Hair Cut & Styling", "Facial Treatment"],
-      total: 1300,
-      paymentStatus: "paid"
-    },
-    {
-      id: "2",
-      invoiceNumber: "INV-002",
-      customerName: "Rahul Kumar",
-      date: "2024-06-27",
-      services: ["Beard Trim"],
-      total: 200,
-      paymentStatus: "unpaid"
-    },
-    {
-      id: "3",
-      invoiceNumber: "INV-003",
-      customerName: "Sneha Patel",
-      date: "2024-06-26",
-      services: ["Hair Coloring", "Hair Cut & Styling"],
-      total: 2500,
-      paymentStatus: "partial"
-    }
-  ]);
 
-  const filteredInvoices = invoices.filter(invoice =>
-    invoice.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    invoice.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Load invoices and customers from API
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [invoicesData, customersData] = await Promise.all([
+        apiClient.getInvoices(),
+        apiClient.getCustomers()
+      ]);
+      console.log('Invoices loaded:', invoicesData);
+      console.log('Customers loaded:', customersData);
+      setInvoices(invoicesData || []);
+      setCustomers(customersData || []);
+    } catch (error) {
+      console.error('Failed to load data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load invoices. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getCustomerName = (customerId: string) => {
+    const customer = customers.find(c => c.ID === customerId);
+    return customer?.Name || 'Unknown Customer';
+  };
+
+  const filteredInvoices = invoices.filter(invoice => {
+    const customerName = getCustomerName(invoice.CustomerID);
+    return customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           invoice.InvoiceNumber.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -72,34 +82,74 @@ export const InvoiceManagement = () => {
     }
   };
 
-  const handleCreateInvoice = (newInvoice: Invoice) => {
-    setInvoices(prev => [...prev, newInvoice]);
-    toast({
-      title: "Invoice Created",
-      description: `Invoice ${newInvoice.invoiceNumber} has been created successfully.`,
-    });
-  };
-
-  const handleEditInvoice = (updatedInvoice: Invoice) => {
-    setInvoices(prev => 
-      prev.map(invoice => 
-        invoice.id === updatedInvoice.id ? updatedInvoice : invoice
-      )
-    );
-    toast({
-      title: "Invoice Updated",
-      description: `Invoice ${updatedInvoice.invoiceNumber} has been updated successfully.`,
-    });
-  };
-
-  const handleViewInvoice = (invoiceId: string) => {
-    const invoice = invoices.find(inv => inv.id === invoiceId);
-    if (invoice) {
+  const handleCreateInvoice = async (invoiceData: CreateInvoiceInput) => {
+    try {
+      await apiClient.createInvoice(invoiceData);
+      await loadData(); // Reload data
       toast({
-        title: "Invoice Details",
-        description: `Viewing ${invoice.invoiceNumber} for ${invoice.customerName} - Total: ₹${invoice.total}`,
+        title: "Invoice Created",
+        description: "New invoice has been created successfully.",
+      });
+    } catch (error) {
+      console.error('Failed to create invoice:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create invoice. Please try again.",
+        variant: "destructive",
       });
     }
+  };
+
+  const handleEditInvoice = async (updateData: UpdateInvoiceInput) => {
+    if (!editingInvoice) return;
+    
+    try {
+      await apiClient.updateInvoice(editingInvoice.ID, updateData);
+      await loadData(); // Reload data
+      toast({
+        title: "Invoice Updated",
+        description: `Invoice ${editingInvoice.InvoiceNumber} has been updated successfully.`,
+      });
+    } catch (error) {
+      console.error('Failed to update invoice:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update invoice. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteInvoice = async () => {
+    if (!invoiceToDelete) return;
+    
+    try {
+      await apiClient.deleteInvoice(invoiceToDelete.ID);
+      await loadData(); // Reload data
+      toast({
+        title: "Invoice Deleted",
+        description: `Invoice ${invoiceToDelete.InvoiceNumber} has been deleted successfully.`,
+      });
+      setInvoiceToDelete(null);
+      setDeleteDialogOpen(false);
+    } catch (error) {
+      console.error('Failed to delete invoice:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete invoice. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleViewInvoice = (invoice: Invoice) => {
+    const customerName = getCustomerName(invoice.CustomerID);
+    const servicesList = invoice.Items.map(item => `${item.ServiceName} (${item.Quantity}x)`).join(', ');
+    
+    toast({
+      title: "Invoice Details",
+      description: `${invoice.InvoiceNumber} - ${customerName} | Services: ${servicesList} | Total: ₹${invoice.Total.toFixed(2)}`,
+    });
   };
 
   const openEditDialog = (invoice: Invoice) => {
@@ -107,17 +157,28 @@ export const InvoiceManagement = () => {
     setEditDialogOpen(true);
   };
 
-  const handleUpdatePaymentStatus = (invoiceId: string, newStatus: "paid" | "unpaid" | "partial") => {
-    setInvoices(prev => prev.map(invoice => 
-      invoice.id === invoiceId 
-        ? { ...invoice, paymentStatus: newStatus }
-        : invoice
-    ));
-    
-    toast({
-      title: "Payment Status Updated",
-      description: `Invoice payment status changed to ${newStatus}`,
-    });
+  const openDeleteDialog = (invoice: Invoice) => {
+    setInvoiceToDelete(invoice);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleUpdatePaymentStatus = async (invoice: Invoice, newStatus: "paid" | "unpaid" | "partial") => {
+    try {
+      await apiClient.updateInvoice(invoice.ID, { paymentStatus: newStatus });
+      await loadData(); // Reload data
+      
+      toast({
+        title: "Payment Status Updated",
+        description: `Invoice payment status changed to ${newStatus}`,
+      });
+    } catch (error) {
+      console.error('Failed to update payment status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update payment status. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -151,77 +212,98 @@ export const InvoiceManagement = () => {
           <CardTitle>Recent Invoices ({filteredInvoices.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-3 px-4 font-medium text-gray-900">Invoice #</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-900">Customer</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-900">Date</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-900">Services</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-900">Total</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-900">Status</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-900">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredInvoices.map((invoice) => (
-                  <tr key={invoice.id} className="border-b hover:bg-gray-50">
-                    <td className="py-3 px-4 font-medium text-gray-900">
-                      {invoice.invoiceNumber}
-                    </td>
-                    <td className="py-3 px-4 text-gray-900">
-                      {invoice.customerName}
-                    </td>
-                    <td className="py-3 px-4 text-gray-600">
-                      {new Date(invoice.date).toLocaleDateString()}
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="text-sm text-gray-600">
-                        {invoice.services.join(", ")}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 font-bold text-gray-900">
-                      ₹{invoice.total}
-                    </td>
-                    <td className="py-3 px-4">
-                      <button 
-                        className={`px-2 py-1 rounded text-xs font-medium capitalize cursor-pointer hover:opacity-80 ${getStatusColor(invoice.paymentStatus)}`}
-                        onClick={() => {
-                          const statuses: ("paid" | "unpaid" | "partial")[] = ["paid", "unpaid", "partial"];
-                          const currentIndex = statuses.indexOf(invoice.paymentStatus);
-                          const nextStatus = statuses[(currentIndex + 1) % statuses.length];
-                          handleUpdatePaymentStatus(invoice.id, nextStatus);
-                        }}
-                      >
-                        {invoice.paymentStatus}
-                      </button>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleViewInvoice(invoice.id)}
-                          title="View Invoice"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => openEditDialog(invoice)}
-                          title="Edit Invoice"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-lg">Loading invoices...</div>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-3 px-4 font-medium text-gray-900">Invoice #</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-900">Customer</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-900">Date</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-900">Services</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-900">Total</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-900">Status</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-900">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {filteredInvoices.map((invoice) => (
+                    <tr key={invoice.ID} className="border-b hover:bg-gray-50">
+                      <td className="py-3 px-4 font-medium text-gray-900">
+                        {invoice.InvoiceNumber}
+                      </td>
+                      <td className="py-3 px-4 text-gray-900">
+                        {getCustomerName(invoice.CustomerID)}
+                      </td>
+                      <td className="py-3 px-4 text-gray-600">
+                        {new Date(invoice.InvoiceDate).toLocaleDateString()}
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="text-sm text-gray-600">
+                          {invoice.Items.map(item => `${item.ServiceName} (${item.Quantity}x)`).join(", ")}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 font-bold text-gray-900">
+                        ₹{invoice.Total.toFixed(2)}
+                      </td>
+                      <td className="py-3 px-4">
+                        <button 
+                          className={`px-2 py-1 rounded text-xs font-medium capitalize cursor-pointer hover:opacity-80 ${getStatusColor(invoice.PaymentStatus)}`}
+                          onClick={() => {
+                            const statuses: ("paid" | "unpaid" | "partial")[] = ["paid", "unpaid", "partial"];
+                            const currentIndex = statuses.indexOf(invoice.PaymentStatus);
+                            const nextStatus = statuses[(currentIndex + 1) % statuses.length];
+                            handleUpdatePaymentStatus(invoice, nextStatus);
+                          }}
+                        >
+                          {invoice.PaymentStatus}
+                        </button>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleViewInvoice(invoice)}
+                            title="View Invoice"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => openEditDialog(invoice)}
+                            title="Edit Invoice"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => openDeleteDialog(invoice)}
+                            title="Delete Invoice"
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {!loading && filteredInvoices.length === 0 && (
+            <div className="p-12 text-center">
+              <p className="text-gray-500 text-lg">No invoices found matching your search.</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -231,6 +313,21 @@ export const InvoiceManagement = () => {
         onOpenChange={setEditDialogOpen}
         onEditInvoice={handleEditInvoice}
       />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Invoice</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete invoice {invoiceToDelete?.InvoiceNumber}? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteInvoice}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
