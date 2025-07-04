@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Scissors, Home, Users, FileText, BarChart3, Settings, LogOut, User } from "lucide-react";
 import { ActiveTab } from "@/pages/Index";
@@ -51,7 +50,7 @@ export const AppSidebar = ({ activeTab, onTabChange }: AppSidebarProps) => {
 
   // Get initials from user name or email
   const getInitials = (name?: string, email?: string) => {
-    if (name) {
+    if (name && name !== 'Salon Owner') {
       return name
         .split(' ')
         .map(word => word.charAt(0))
@@ -59,10 +58,29 @@ export const AppSidebar = ({ activeTab, onTabChange }: AppSidebarProps) => {
         .toUpperCase()
         .slice(0, 2);
     }
-    if (email) {
+    if (email && email !== 'owner@salon.com') {
       return email.charAt(0).toUpperCase();
     }
     return 'SO';
+  };
+
+  // Get display name with fallback
+  const getDisplayName = () => {
+    if (user?.name && user.name !== 'Salon Owner') {
+      return user.name;
+    }
+    if (user?.salonName) {
+      return user.salonName;
+    }
+    return 'Salon Owner';
+  };
+
+  // Get display email with fallback
+  const getDisplayEmail = () => {
+    if (user?.email && user.email !== 'owner@salon.com') {
+      return user.email;
+    }
+    return 'owner@salon.com';
   };
 
   return (
@@ -120,10 +138,10 @@ export const AppSidebar = ({ activeTab, onTabChange }: AppSidebarProps) => {
             {!isCollapsed && (
               <div className="flex-1 min-w-0">
                 <p className="text-slate-800 font-medium text-sm truncate">
-                  {user?.name || user?.salonName || 'Salon Owner'}
+                  {getDisplayName()}
                 </p>
                 <p className="text-slate-600 text-xs truncate">
-                  {user?.email || 'owner@salon.com'}
+                  {getDisplayEmail()}
                 </p>
               </div>
             )}
@@ -145,4 +163,3 @@ export const AppSidebar = ({ activeTab, onTabChange }: AppSidebarProps) => {
     </Sidebar>
   );
 };
-

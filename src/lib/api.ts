@@ -162,6 +162,43 @@ class ApiClient {
   async getDashboardOverview(): Promise<DashboardOverview> {
     return this.request<DashboardOverview>('/api/dashboard');
   }
+
+  // Settings methods
+  async getProfile(): Promise<UserProfile> {
+    return this.request<UserProfile>('/auth/profile');
+  }
+
+  async updateProfile(profileData: UpdateProfileInput): Promise<UserProfile> {
+    return this.request<UserProfile>('/auth/update-profile', {
+      method: 'PUT',
+      body: JSON.stringify(profileData),
+    });
+  }
+
+  async updateWorkingHours(workingHours: WorkingHour[]): Promise<void> {
+    return this.request<void>('/auth/working-hours', {
+      method: 'PUT',
+      body: JSON.stringify({ workingHours }),
+    });
+  }
+
+  async updateNotificationSettings(settings: NotificationSettings): Promise<void> {
+    return this.request<void>('/auth/notification-settings', {
+      method: 'PUT',
+      body: JSON.stringify(settings),
+    });
+  }
+
+  async getReminderTemplates(): Promise<ReminderTemplates> {
+    return this.request<ReminderTemplates>('/api/reminder-templates');
+  }
+
+  async updateReminderTemplates(templates: ReminderTemplateInput): Promise<void> {
+    return this.request<void>('/api/reminder-templates', {
+      method: 'PUT',
+      body: JSON.stringify(templates),
+    });
+  }
 }
 
 // Service types matching your backend
@@ -299,6 +336,7 @@ export interface User {
   email: string;
   name: string;
   salonName?: string;
+  phone?: string;
 }
 
 // Auth response interfaces
@@ -369,6 +407,47 @@ export interface UpcomingReminder {
   name: string;
   type: string; // "Birthday" or "Anniversary"
   date: string; // e.g. "Tomorrow", "3 days"
+}
+
+// Settings interfaces
+export interface UpdateProfileInput {
+  salonName: string;
+  salonAddress: string;
+  phone: string;
+  email: string;
+}
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  name: string;
+  salonName: string;
+  salonAddress: string;
+  phone: string;
+}
+
+export interface WorkingHour {
+  day: string;
+  open: string;
+  close: string;
+  isOpen: boolean;
+}
+
+export interface NotificationSettings {
+  birthdayReminders: boolean;
+  anniversaryReminders: boolean;
+  whatsappNotifications: boolean;
+  smsNotifications: boolean;
+}
+
+export interface ReminderTemplates {
+  birthday: string;
+  anniversary: string;
+}
+
+export interface ReminderTemplateInput {
+  birthday?: string;
+  anniversary?: string;
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);

@@ -1,5 +1,3 @@
-
-
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { apiClient, User } from '@/lib/api';
 
@@ -55,31 +53,8 @@ export const getCurrentUser = createAsyncThunk<User, void, { rejectValue: AuthEr
   'auth/getCurrentUser',
   async (_, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      
-      if (!token) {
-        throw new Error('No token found');
-      }
-
-      // Make sure your API call includes the token
-      const response = await fetch('/auth/me', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          // Token is invalid
-          localStorage.removeItem('token');
-          throw new Error('Invalid token');
-        }
-        throw new Error('Failed to fetch user');
-      }
-
-      const data = await response.json();
-      return data;
+      const response = await apiClient.getCurrentUser();
+      return response;
     } catch (error: any) {
       return rejectWithValue({
         message: error.message,
@@ -166,4 +141,3 @@ const authSlice = createSlice({
 
 export const { logout } = authSlice.actions;
 export default authSlice.reducer;
-
