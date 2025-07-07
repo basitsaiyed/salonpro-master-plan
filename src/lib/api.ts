@@ -1,3 +1,4 @@
+
 import { store } from '@/store';
 
 const API_BASE_URL = 'http://localhost:8080';
@@ -207,14 +208,14 @@ class ApiClient {
 
   // Employee management endpoints
   async getEmployees(): Promise<Employee[]> {
-    const response = await this.request('/auth/employees', {
+    const response = await this.request<{ employees: Employee[] }>('/auth/employees', {
       method: 'GET',
     });
     return response.employees || [];
   }
 
   async createEmployee(employeeData: CreateEmployeeInput): Promise<Employee> {
-    const response = await this.request('/auth/employees', {
+    const response = await this.request<{ employee: Employee }>('/auth/employees', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -225,7 +226,7 @@ class ApiClient {
   }
 
   async updateEmployee(employeeId: string, updateData: UpdateEmployeeInput): Promise<Employee> {
-    const response = await this.request(`/auth/employees/${employeeId}`, {
+    const response = await this.request<{ employee: Employee }>(`/auth/employees/${employeeId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

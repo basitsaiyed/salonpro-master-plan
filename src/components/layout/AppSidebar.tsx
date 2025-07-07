@@ -78,19 +78,19 @@ export const AppSidebar = ({ activeTab, onTabChange }: AppSidebarProps) => {
 
   // Get display name with fallback
   const getDisplayName = () => {
-    if (user?.name && user.name !== 'Salon Owner') {
-      return user.name;
+    if (user?.Name && user.Name !== 'Salon Owner') {
+      return user.Name;
     }
-    if (user?.salonName) {
-      return user.salonName;
+    if (user?.SalonName) {
+      return user.SalonName;
     }
     return 'Salon Owner';
   };
 
   // Get display email with fallback
   const getDisplayEmail = () => {
-    if (user?.email && user.email !== 'owner@salon.com') {
-      return user.email;
+    if (user?.Email && user.Email !== 'owner@salon.com') {
+      return user.Email;
     }
     return 'owner@salon.com';
   };
@@ -149,7 +149,7 @@ export const AppSidebar = ({ activeTab, onTabChange }: AppSidebarProps) => {
           <div className="flex items-center gap-3 px-2">
             <Avatar className="h-8 w-8">
               <AvatarFallback className="bg-primary text-white text-sm">
-                {getInitials(user?.name, user?.email)}
+                {getInitials(user?.Name, user?.Email)}
               </AvatarFallback>
             </Avatar>
             {!isCollapsed && (
