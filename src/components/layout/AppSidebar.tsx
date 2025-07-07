@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { Scissors, Home, Users, FileText, BarChart3, Settings, LogOut, User } from "lucide-react";
+import { Scissors, Home, Users, FileText, BarChart3, Settings, LogOut, User, UserPlus } from "lucide-react";
 import { ActiveTab } from "@/pages/Index";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -23,19 +24,30 @@ interface AppSidebarProps {
   onTabChange: (tab: ActiveTab) => void;
 }
 
-const navItems = [
+// Navigation items for owners (full access)
+const ownerNavItems = [
   { id: "dashboard" as ActiveTab, label: "Dashboard", icon: Home },
   { id: "customers" as ActiveTab, label: "Customers", icon: Users },
+  { id: "employees" as ActiveTab, label: "Employees", icon: UserPlus },
   { id: "services" as ActiveTab, label: "Services", icon: Scissors },
   { id: "invoices" as ActiveTab, label: "Invoices", icon: FileText },
   { id: "reports" as ActiveTab, label: "Analytics", icon: BarChart3 },
   { id: "settings" as ActiveTab, label: "Profile", icon: Settings },
 ];
 
+// Navigation items for employees (limited access)
+const employeeNavItems = [
+  { id: "customers" as ActiveTab, label: "Customers", icon: Users },
+  { id: "invoices" as ActiveTab, label: "Invoices", icon: FileText },
+];
+
 export const AppSidebar = ({ activeTab, onTabChange }: AppSidebarProps) => {
   const { state, setOpenMobile } = useSidebar();
   const { user, logout } = useAuth();
   const isCollapsed = state === "collapsed";
+
+  // Determine navigation items based on user role
+  const navItems = user?.Role === 'owner' ? ownerNavItems : employeeNavItems;
 
   const handleTabChange = (tab: ActiveTab) => {
     onTabChange(tab);
@@ -91,7 +103,12 @@ export const AppSidebar = ({ activeTab, onTabChange }: AppSidebarProps) => {
             <Scissors className="h-6 w-6 text-white" />
           </div>
           {!isCollapsed && (
-            <h1 className="text-xl font-bold text-slate-800">SalonPro</h1>
+            <div>
+              <h1 className="text-xl font-bold text-slate-800">SalonPro</h1>
+              {user?.Role === 'employee' && (
+                <p className="text-xs text-slate-600">Employee Access</p>
+              )}
+            </div>
           )}
         </div>
       </SidebarHeader>

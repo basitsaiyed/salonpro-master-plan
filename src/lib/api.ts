@@ -204,6 +204,42 @@ class ApiClient {
       body: JSON.stringify(templates),
     });
   }
+
+  // Employee management endpoints
+  async getEmployees(): Promise<Employee[]> {
+    const response = await this.request('/auth/employees', {
+      method: 'GET',
+    });
+    return response.employees || [];
+  }
+
+  async createEmployee(employeeData: CreateEmployeeInput): Promise<Employee> {
+    const response = await this.request('/auth/employees', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(employeeData),
+    });
+    return response.employee;
+  }
+
+  async updateEmployee(employeeId: string, updateData: UpdateEmployeeInput): Promise<Employee> {
+    const response = await this.request(`/auth/employees/${employeeId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updateData),
+    });
+    return response.employee;
+  }
+
+  async deleteEmployee(employeeId: string): Promise<void> {
+    await this.request(`/auth/employees/${employeeId}`, {
+      method: 'DELETE',
+    });
+  }
 }
 
 // Service types matching your backend
@@ -274,6 +310,31 @@ export interface Customer {
   UpdatedAt: string
 }
 
+// Employee interface
+export interface Employee {
+  ID: string;
+  Name: string;
+  Email: string;
+  Phone: string;
+  Role: 'employee';
+  SalonID: string;
+  CreatedAt: string;
+  UpdatedAt: string;
+}
+
+export interface CreateEmployeeInput {
+  name: string;
+  email: string;
+  phone: string;
+  password: string;
+}
+
+export interface UpdateEmployeeInput {
+  name?: string;
+  email?: string;
+  phone?: string;
+}
+
 // Invoice interfaces
 export interface InvoiceItemInput {
   serviceId: string
@@ -337,11 +398,15 @@ export interface Invoice {
 
 // User interface for authentication
 export interface User {
-  id: string;
-  email: string;
-  name: string;
-  salonName?: string;
-  phone?: string;
+  ID: string;
+  Name: string;
+  Email: string;
+  Phone: string;
+  Role: 'owner' | 'employee';
+  SalonName?: string;
+  SalonID?: string;
+  CreatedAt: string;
+  UpdatedAt: string;
 }
 
 // Auth response interfaces
