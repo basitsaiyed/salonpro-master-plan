@@ -35,7 +35,7 @@ const ownerNavItems = [
   { id: "settings" as ActiveTab, label: "Profile", icon: Settings },
 ];
 
-// Navigation items for employees (limited access)
+// Navigation items for employees (limited access - only customers and invoices)
 const employeeNavItems = [
   { id: "customers" as ActiveTab, label: "Customers", icon: Users },
   { id: "invoices" as ActiveTab, label: "Invoices", icon: FileText },
@@ -46,8 +46,12 @@ export const AppSidebar = ({ activeTab, onTabChange }: AppSidebarProps) => {
   const { user, logout } = useAuth();
   const isCollapsed = state === "collapsed";
 
+  console.log("Current user role:", user?.Role); // Debug log to verify role
+
   // Determine navigation items based on user role
   const navItems = user?.Role === 'owner' ? ownerNavItems : employeeNavItems;
+
+  console.log("Navigation items for current user:", navItems); // Debug log
 
   const handleTabChange = (tab: ActiveTab) => {
     onTabChange(tab);
@@ -159,6 +163,10 @@ export const AppSidebar = ({ activeTab, onTabChange }: AppSidebarProps) => {
                 </p>
                 <p className="text-slate-600 text-xs truncate">
                   {getDisplayEmail()}
+                </p>
+                {/* Show role for debugging */}
+                <p className="text-slate-500 text-xs">
+                  Role: {user?.Role || 'Unknown'}
                 </p>
               </div>
             )}
