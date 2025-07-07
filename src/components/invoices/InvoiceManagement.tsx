@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +17,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const InvoiceManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -29,6 +37,7 @@ export const InvoiceManagement = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   // Load invoices and customers from API
   useEffect(() => {
@@ -85,7 +94,7 @@ export const InvoiceManagement = () => {
   const handleCreateInvoice = async (invoiceData: CreateInvoiceInput) => {
     try {
       await apiClient.createInvoice(invoiceData);
-      await loadData(); // Reload data
+      await loadData();
       toast({
         title: "Invoice Created",
         description: "New invoice has been created successfully.",
@@ -105,7 +114,7 @@ export const InvoiceManagement = () => {
     
     try {
       await apiClient.updateInvoice(editingInvoice.ID, updateData);
-      await loadData(); // Reload data
+      await loadData();
       toast({
         title: "Invoice Updated",
         description: `Invoice ${editingInvoice.InvoiceNumber} has been updated successfully.`,
@@ -125,7 +134,7 @@ export const InvoiceManagement = () => {
     
     try {
       await apiClient.deleteInvoice(invoiceToDelete.ID);
-      await loadData(); // Reload data
+      await loadData();
       toast({
         title: "Invoice Deleted",
         description: `Invoice ${invoiceToDelete.InvoiceNumber} has been deleted successfully.`,
@@ -165,7 +174,7 @@ export const InvoiceManagement = () => {
   const handleUpdatePaymentStatus = async (invoice: Invoice, newStatus: "paid" | "unpaid" | "partial") => {
     try {
       await apiClient.updateInvoice(invoice.ID, { paymentStatus: newStatus });
-      await loadData(); // Reload data
+      await loadData();
       
       toast({
         title: "Payment Status Updated",
@@ -181,12 +190,82 @@ export const InvoiceManagement = () => {
     }
   };
 
+  // Mobile card view for invoices
+  const MobileInvoiceCard = ({ invoice }: { invoice: Invoice }) => (
+    <Card key={invoice.ID} className="mb-4">
+      <CardContent className="p-4">
+        <div className="flex justify-between items-start mb-3">
+          <div>
+            <h3 className="font-semibold text-lg">{invoice.InvoiceNumber}</h3>
+            <p className="text-sm text-gray-600">{getCustomerName(invoice.CustomerID)}</p>
+          </div>
+          <span className="text-lg font-bold">₹{invoice.Total.toFixed(2)}</span>
+        </div>
+        
+        <div className="space-y-2 mb-3">
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">Date:</span>
+            <span>{new Date(invoice.InvoiceDate).toLocaleDateString()}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">Services:</span>
+            <span className="text-right text-xs">
+              {invoice.Items.map(item => `${item.ServiceName} (${item.Quantity}x)`).join(", ")}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex justify-between items-center">
+          <button 
+            className={`px-3 py-1 rounded text-xs font-medium capitalize cursor-pointer hover:opacity-80 ${getStatusColor(invoice.PaymentStatus)}`}
+            onClick={() => {
+              const statuses: ("paid" | "unpaid" | "partial")[] = ["paid", "unpaid", "partial"];
+              const currentIndex = statuses.indexOf(invoice.PaymentStatus);
+              const nextStatus = statuses[(currentIndex + 1) % statuses.length];
+              handleUpdatePaymentStatus(invoice, nextStatus);
+            }}
+          >
+            {invoice.PaymentStatus}
+          </button>
+          
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => handleViewInvoice(invoice)}
+              title="View Invoice"
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => openEditDialog(invoice)}
+              title="Edit Invoice"
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => openDeleteDialog(invoice)}
+              title="Delete Invoice"
+              className="text-red-600 hover:text-red-700"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 md:space-y-6 p-4 md:p-0">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Invoice Management</h2>
-          <p className="text-gray-600">Track and manage your salon invoices</p>
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">Invoice Management</h2>
+          <p className="text-sm md:text-base text-gray-600">Track and manage your salon invoices</p>
         </div>
         <CreateInvoiceDialog onCreateInvoice={handleCreateInvoice} />
       </div>
@@ -211,92 +290,103 @@ export const InvoiceManagement = () => {
         <CardHeader>
           <CardTitle>Recent Invoices ({filteredInvoices.length})</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0 md:p-6">
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="text-lg">Loading invoices...</div>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-4 font-medium text-gray-900">Invoice #</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-900">Customer</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-900">Date</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-900">Services</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-900">Total</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-900">Status</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-900">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
+            <>
+              {isMobile ? (
+                <div className="p-4">
                   {filteredInvoices.map((invoice) => (
-                    <tr key={invoice.ID} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4 font-medium text-gray-900">
-                        {invoice.InvoiceNumber}
-                      </td>
-                      <td className="py-3 px-4 text-gray-900">
-                        {getCustomerName(invoice.CustomerID)}
-                      </td>
-                      <td className="py-3 px-4 text-gray-600">
-                        {new Date(invoice.InvoiceDate).toLocaleDateString()}
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="text-sm text-gray-600">
-                          {invoice.Items.map(item => `${item.ServiceName} (${item.Quantity}x)`).join(", ")}
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 font-bold text-gray-900">
-                        ₹{invoice.Total.toFixed(2)}
-                      </td>
-                      <td className="py-3 px-4">
-                        <button 
-                          className={`px-2 py-1 rounded text-xs font-medium capitalize cursor-pointer hover:opacity-80 ${getStatusColor(invoice.PaymentStatus)}`}
-                          onClick={() => {
-                            const statuses: ("paid" | "unpaid" | "partial")[] = ["paid", "unpaid", "partial"];
-                            const currentIndex = statuses.indexOf(invoice.PaymentStatus);
-                            const nextStatus = statuses[(currentIndex + 1) % statuses.length];
-                            handleUpdatePaymentStatus(invoice, nextStatus);
-                          }}
-                        >
-                          {invoice.PaymentStatus}
-                        </button>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleViewInvoice(invoice)}
-                            title="View Invoice"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => openEditDialog(invoice)}
-                            title="Edit Invoice"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => openDeleteDialog(invoice)}
-                            title="Delete Invoice"
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
+                    <MobileInvoiceCard key={invoice.ID} invoice={invoice} />
                   ))}
-                </tbody>
-              </table>
-            </div>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Invoice #</TableHead>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead className="hidden lg:table-cell">Services</TableHead>
+                        <TableHead>Total</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredInvoices.map((invoice) => (
+                        <TableRow key={invoice.ID}>
+                          <TableCell className="font-medium">
+                            {invoice.InvoiceNumber}
+                          </TableCell>
+                          <TableCell>
+                            {getCustomerName(invoice.CustomerID)}
+                          </TableCell>
+                          <TableCell>
+                            {new Date(invoice.InvoiceDate).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell className="hidden lg:table-cell">
+                            <div className="text-sm text-gray-600 max-w-xs truncate">
+                              {invoice.Items.map(item => `${item.ServiceName} (${item.Quantity}x)`).join(", ")}
+                            </div>
+                          </TableCell>
+                          <TableCell className="font-bold">
+                            ₹{invoice.Total.toFixed(2)}
+                          </TableCell>
+                          <TableCell>
+                            <button 
+                              className={`px-2 py-1 rounded text-xs font-medium capitalize cursor-pointer hover:opacity-80 ${getStatusColor(invoice.PaymentStatus)}`}
+                              onClick={() => {
+                                const statuses: ("paid" | "unpaid" | "partial")[] = ["paid", "unpaid", "partial"];
+                                const currentIndex = statuses.indexOf(invoice.PaymentStatus);
+                                const nextStatus = statuses[(currentIndex + 1) % statuses.length];
+                                handleUpdatePaymentStatus(invoice, nextStatus);
+                              }}
+                            >
+                              {invoice.PaymentStatus}
+                            </button>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleViewInvoice(invoice)}
+                                title="View Invoice"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => openEditDialog(invoice)}
+                                title="Edit Invoice"
+                                className="hidden sm:inline-flex"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => openDeleteDialog(invoice)}
+                                title="Delete Invoice"
+                                className="text-red-600 hover:text-red-700 hidden sm:inline-flex"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </>
           )}
 
           {!loading && filteredInvoices.length === 0 && (
