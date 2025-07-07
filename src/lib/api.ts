@@ -1,3 +1,4 @@
+
 import { store } from '@/store';
 
 const API_BASE_URL = 'http://localhost:8080';
@@ -172,38 +173,38 @@ class ApiClient {
     return this.request<DashboardOverview>('/api/dashboard');
   }
 
-  // Settings methods
+  // Settings methods - updated to match new endpoints
   async getProfile(): Promise<UserProfile> {
     return this.request<UserProfile>('/auth/profile');
   }
 
-  async updateProfile(profileData: UpdateProfileInput): Promise<UserProfile> {
-    return this.request<UserProfile>('/auth/update-profile', {
+  async updateSalonProfile(profileData: UpdateSalonProfileInput): Promise<UserProfile> {
+    return this.request<UserProfile>('/auth/profile/update-salon', {
       method: 'PUT',
       body: JSON.stringify(profileData),
     });
   }
 
-  async updateWorkingHours(workingHours: WorkingHour[]): Promise<void> {
-    return this.request<void>('/auth/working-hours', {
+  async updateWorkingHours(workingHours: WorkingHoursInput): Promise<void> {
+    return this.request<void>('/auth/profile/update-hours', {
       method: 'PUT',
-      body: JSON.stringify({ workingHours }),
+      body: JSON.stringify(workingHours),
     });
   }
 
-  async updateNotificationSettings(settings: NotificationSettings): Promise<void> {
-    return this.request<void>('/auth/notification-settings', {
+  async updateNotificationSettings(settings: NotificationSettingsInput): Promise<void> {
+    return this.request<void>('/auth/profile/update-notifications', {
       method: 'PUT',
       body: JSON.stringify(settings),
     });
   }
 
-  async getReminderTemplates(): Promise<ReminderTemplates> {
-    return this.request<ReminderTemplates>('/api/reminder-templates');
+  async getReminderTemplates(): Promise<ReminderTemplate[]> {
+    return this.request<ReminderTemplate[]>('/api/reminder-templates');
   }
 
-  async updateReminderTemplates(templates: ReminderTemplateInput): Promise<void> {
-    return this.request<void>('/api/reminder-templates', {
+  async updateReminderTemplates(templates: UpdateReminderTemplatesInput): Promise<void> {
+    return this.request<void>('/auth/profile/update-templates', {
       method: 'PUT',
       body: JSON.stringify(templates),
     });
@@ -418,8 +419,8 @@ export interface UpcomingReminder {
   date: string; // e.g. "Tomorrow", "3 days"
 }
 
-// Settings interfaces
-export interface UpdateProfileInput {
+// Settings interfaces - updated to match new backend structure
+export interface UpdateSalonProfileInput {
   salonName: string;
   salonAddress: string;
   phone: string;
@@ -433,28 +434,44 @@ export interface UserProfile {
   salonName: string;
   salonAddress: string;
   phone: string;
+  workingHours?: WorkingHoursData;
 }
 
-export interface WorkingHour {
-  day: string;
+export interface WorkingHoursData {
+  monday: DaySchedule;
+  tuesday: DaySchedule;
+  wednesday: DaySchedule;
+  thursday: DaySchedule;
+  friday: DaySchedule;
+  saturday: DaySchedule;
+  sunday: DaySchedule;
+}
+
+export interface DaySchedule {
   open: string;
   close: string;
-  isOpen: boolean;
+  closed: boolean;
 }
 
-export interface NotificationSettings {
+export interface WorkingHoursInput {
+  workingHours: WorkingHoursData;
+}
+
+export interface NotificationSettingsInput {
   birthdayReminders: boolean;
   anniversaryReminders: boolean;
   whatsappNotifications: boolean;
   smsNotifications: boolean;
 }
 
-export interface ReminderTemplates {
-  birthday: string;
-  anniversary: string;
+export interface ReminderTemplate {
+  id: string;
+  type: 'birthday' | 'anniversary';
+  message: string;
+  isActive: boolean;
 }
 
-export interface ReminderTemplateInput {
+export interface UpdateReminderTemplatesInput {
   birthday?: string;
   anniversary?: string;
 }

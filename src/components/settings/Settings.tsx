@@ -5,15 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Scissors, MessageCircle, Bell, User, Send, Loader2 } from "lucide-react";
+import { Scissors, MessageCircle, Bell, Send, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
   apiClient, 
-  UpdateProfileInput, 
-  WorkingHour, 
-  NotificationSettings, 
-  ReminderTemplateInput 
+  UpdateSalonProfileInput, 
+  WorkingHoursInput,
+  WorkingHoursData,
+  NotificationSettingsInput,
+  UpdateReminderTemplatesInput 
 } from "@/lib/api";
 
 export const Settings = () => {
@@ -32,29 +33,29 @@ export const Settings = () => {
     queryFn: () => apiClient.getReminderTemplates(),
   });
 
-  const [salonProfile, setSalonProfile] = useState<UpdateProfileInput>({
+  const [salonProfile, setSalonProfile] = useState<UpdateSalonProfileInput>({
     salonName: "",
     salonAddress: "",
     phone: "",
     email: ""
   });
 
-  const [workingHours, setWorkingHours] = useState<WorkingHour[]>([
-    { day: "Monday", open: "09:00", close: "20:00", isOpen: true },
-    { day: "Tuesday", open: "09:00", close: "20:00", isOpen: true },
-    { day: "Wednesday", open: "09:00", close: "20:00", isOpen: true },
-    { day: "Thursday", open: "09:00", close: "20:00", isOpen: true },
-    { day: "Friday", open: "09:00", close: "20:00", isOpen: true },
-    { day: "Saturday", open: "09:00", close: "21:00", isOpen: true },
-    { day: "Sunday", open: "10:00", close: "19:00", isOpen: true }
-  ]);
-
-  const [messageTemplates, setMessageTemplates] = useState({
-    birthday: "Happy Birthday, [CustomerName]! 🎉 Treat yourself to a special salon session. Call us to book!",
-    anniversary: "Happy Anniversary, [CustomerName]! 💕 Celebrate with a couple's spa session. Contact us today!"
+  const [workingHours, setWorkingHours] = useState<WorkingHoursData>({
+    monday: { open: "09:00", close: "20:00", closed: false },
+    tuesday: { open: "09:00", close: "20:00", closed: false },
+    wednesday: { open: "09:00", close: "20:00", closed: false },
+    thursday: { open: "09:00", close: "20:00", closed: false },
+    friday: { open: "09:00", close: "20:00", closed: false },
+    saturday: { open: "09:00", close: "21:00", closed: false },
+    sunday: { open: "10:00", close: "19:00", closed: true }
   });
 
-  const [notifications, setNotifications] = useState<NotificationSettings>({
+  const [messageTemplates, setMessageTemplates] = useState({
+    birthday: "Hi [CustomerName], SalonPro wishes you a very happy birthday! 🎉 Enjoy 20% off on your next visit this month!",
+    anniversary: "Hi [CustomerName], happy salon anniversary! 🎊 Thank you for being our valued customer. Here's 15% off your next service!"
+  });
+
+  const [notifications, setNotifications] = useState<NotificationSettingsInput>({
     birthdayReminders: true,
     anniversaryReminders: true,
     whatsappNotifications: true,
@@ -70,22 +71,30 @@ export const Settings = () => {
         phone: profile.phone || "",
         email: profile.email || ""
       });
+
+      // Update working hours if available
+      if (profile.workingHours) {
+        setWorkingHours(profile.workingHours);
+      }
     }
   }, [profile]);
 
   // Update local state when templates data is loaded
   useEffect(() => {
-    if (templates) {
+    if (templates && templates.length > 0) {
+      const birthdayTemplate = templates.find(t => t.type === 'birthday');
+      const anniversaryTemplate = templates.find(t => t.type === 'anniversary');
+      
       setMessageTemplates({
-        birthday: templates.birthday || messageTemplates.birthday,
-        anniversary: templates.anniversary || messageTemplates.anniversary
+        birthday: birthdayTemplate?.message || messageTemplates.birthday,
+        anniversary: anniversaryTemplate?.message || messageTemplates.anniversary
       });
     }
   }, [templates]);
 
   // Mutations
-  const updateProfileMutation = useMutation({
-    mutationFn: (data: UpdateProfileInput) => apiClient.updateProfile(data),
+  const updateSalonProfileMutation = useMutation({
+    mutationFn: (data: UpdateSalonProfileInput) => apiClient.updateSalonProfile(data),
     onSuccess: () => {
       toast({
         title: "Profile Updated",
@@ -104,7 +113,7 @@ export const Settings = () => {
   });
 
   const updateWorkingHoursMutation = useMutation({
-    mutationFn: (hours: WorkingHour[]) => apiClient.updateWorkingHours(hours),
+    mutationFn: (hours: WorkingHoursInput) => apiClient.updateWorkingHours(hours),
     onSuccess: () => {
       toast({
         title: "Working Hours Updated",
@@ -121,7 +130,7 @@ export const Settings = () => {
   });
 
   const updateNotificationsMutation = useMutation({
-    mutationFn: (settings: NotificationSettings) => apiClient.updateNotificationSettings(settings),
+    mutationFn: (settings: NotificationSettingsInput) => apiClient.updateNotificationSettings(settings),
     onSuccess: () => {
       toast({
         title: "Notifications Updated",
@@ -138,7 +147,7 @@ export const Settings = () => {
   });
 
   const updateTemplatesMutation = useMutation({
-    mutationFn: (templates: ReminderTemplateInput) => apiClient.updateReminderTemplates(templates),
+    mutationFn: (templates: UpdateReminderTemplatesInput) => apiClient.updateReminderTemplates(templates),
     onSuccess: () => {
       toast({
         title: "Templates Updated",
@@ -155,12 +164,12 @@ export const Settings = () => {
     }
   });
 
-  const handleProfileUpdate = () => {
-    updateProfileMutation.mutate(salonProfile);
+  const handleSalonProfileUpdate = () => {
+    updateSalonProfileMutation.mutate(salonProfile);
   };
 
   const handleHoursUpdate = () => {
-    updateWorkingHoursMutation.mutate(workingHours);
+    updateWorkingHoursMutation.mutate({ workingHours });
   };
 
   const handleTemplatesUpdate = () => {
@@ -181,6 +190,16 @@ export const Settings = () => {
     });
   };
 
+  const updateDaySchedule = (day: keyof WorkingHoursData, field: 'open' | 'close' | 'closed', value: string | boolean) => {
+    setWorkingHours(prev => ({
+      ...prev,
+      [day]: {
+        ...prev[day],
+        [field]: value
+      }
+    }));
+  };
+
   if (profileLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -188,6 +207,8 @@ export const Settings = () => {
       </div>
     );
   }
+
+  const dayNames: (keyof WorkingHoursData)[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
   return (
     <div className="space-y-6">
@@ -245,10 +266,10 @@ export const Settings = () => {
               />
             </div>
             <Button 
-              onClick={handleProfileUpdate}
-              disabled={updateProfileMutation.isPending}
+              onClick={handleSalonProfileUpdate}
+              disabled={updateSalonProfileMutation.isPending}
             >
-              {updateProfileMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {updateSalonProfileMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Update Profile
             </Button>
           </CardContent>
@@ -266,38 +287,26 @@ export const Settings = () => {
               <div className="font-medium">Close</div>
               <div className="font-medium">Active</div>
             </div>
-            {workingHours.map((schedule, index) => (
-              <div key={index} className="grid grid-cols-4 gap-2 items-center">
-                <div className="py-1">{schedule.day}</div>
+            {dayNames.map((day) => (
+              <div key={day} className="grid grid-cols-4 gap-2 items-center">
+                <div className="py-1 capitalize">{day}</div>
                 <Input 
                   type="time" 
-                  value={schedule.open} 
+                  value={workingHours[day].open} 
                   className="h-8" 
-                  disabled={!schedule.isOpen}
-                  onChange={(e) => {
-                    const newHours = [...workingHours];
-                    newHours[index].open = e.target.value;
-                    setWorkingHours(newHours);
-                  }}
+                  disabled={workingHours[day].closed}
+                  onChange={(e) => updateDaySchedule(day, 'open', e.target.value)}
                 />
                 <Input 
                   type="time" 
-                  value={schedule.close} 
+                  value={workingHours[day].close} 
                   className="h-8" 
-                  disabled={!schedule.isOpen}
-                  onChange={(e) => {
-                    const newHours = [...workingHours];
-                    newHours[index].close = e.target.value;
-                    setWorkingHours(newHours);
-                  }}
+                  disabled={workingHours[day].closed}
+                  onChange={(e) => updateDaySchedule(day, 'close', e.target.value)}
                 />
                 <Switch
-                  checked={schedule.isOpen}
-                  onCheckedChange={(checked) => {
-                    const newHours = [...workingHours];
-                    newHours[index].isOpen = checked;
-                    setWorkingHours(newHours);
-                  }}
+                  checked={!workingHours[day].closed}
+                  onCheckedChange={(checked) => updateDaySchedule(day, 'closed', !checked)}
                 />
               </div>
             ))}
