@@ -1,4 +1,3 @@
-
 import { store } from '@/store';
 
 const API_BASE_URL = 'http://localhost:8080';
@@ -178,8 +177,8 @@ class ApiClient {
     return this.request<UserProfile>('/auth/profile');
   }
 
-  async updateSalonProfile(profileData: UpdateSalonProfileInput): Promise<UserProfile> {
-    return this.request<UserProfile>('/auth/profile/update-salon', {
+  async updateSalonProfile(profileData: UpdateSalonProfileInput): Promise<void> {
+    return this.request<void>('/auth/profile/update-salon', {
       method: 'PUT',
       body: JSON.stringify(profileData),
     });
@@ -197,10 +196,6 @@ class ApiClient {
       method: 'PUT',
       body: JSON.stringify(settings),
     });
-  }
-
-  async getReminderTemplates(): Promise<ReminderTemplate[]> {
-    return this.request<ReminderTemplate[]>('/api/reminder-templates');
   }
 
   async updateReminderTemplates(templates: UpdateReminderTemplatesInput): Promise<void> {
@@ -428,13 +423,23 @@ export interface UpdateSalonProfileInput {
 }
 
 export interface UserProfile {
-  id: string;
-  email: string;
-  name: string;
-  salonName: string;
-  salonAddress: string;
-  phone: string;
-  workingHours?: WorkingHoursData;
+  salonProfile: {
+    salonName: string;
+    address: string;
+    phone: string;
+    email: string;
+    workingHours: WorkingHoursData;
+  };
+  notifications: {
+    birthdayReminders: boolean;
+    anniversaryReminders: boolean;
+    whatsAppNotifications: boolean;
+    smsNotifications: boolean;
+  };
+  messageTemplates: {
+    birthday: string;
+    anniversary: string;
+  };
 }
 
 export interface WorkingHoursData {

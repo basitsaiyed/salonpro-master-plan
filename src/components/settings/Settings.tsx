@@ -17,20 +17,37 @@ import {
   UpdateReminderTemplatesInput 
 } from "@/lib/api";
 
+interface ProfileResponse {
+  salonProfile: {
+    salonName: string;
+    address: string;
+    phone: string;
+    email: string;
+    workingHours: WorkingHoursData;
+  };
+  notifications: {
+    birthdayReminders: boolean;
+    anniversaryReminders: boolean;
+    whatsAppNotifications: boolean;
+    smsNotifications: boolean;
+  };
+  messageTemplates: {
+    birthday: string;
+    anniversary: string;
+  };
+}
+
 export const Settings = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch user profile
-  const { data: profile, isLoading: profileLoading } = useQuery({
+  // Fetch user profile - updated to handle the new response structure
+  const { data: profileData, isLoading: profileLoading } = useQuery({
     queryKey: ['profile'],
-    queryFn: () => apiClient.getProfile(),
-  });
-
-  // Fetch reminder templates
-  const { data: templates, isLoading: templatesLoading } = useQuery({
-    queryKey: ['reminder-templates'],
-    queryFn: () => apiClient.getReminderTemplates(),
+    queryFn: async () => {
+      const response = await apiClient.getProfile();
+      return response as ProfileResponse;
+    },
   });
 
   const [salonProfile, setSalonProfile] = useState<UpdateSalonProfileInput>({
@@ -64,33 +81,35 @@ export const Settings = () => {
 
   // Update local state when profile data is loaded
   useEffect(() => {
-    if (profile) {
+    if (profileData) {
+      // Update salon profile
       setSalonProfile({
-        salonName: profile.salonName || "",
-        salonAddress: profile.salonAddress || "",
-        phone: profile.phone || "",
-        email: profile.email || ""
+        salonName: profileData.salonProfile.salonName || "",
+        salonAddress: profileData.salonProfile.address || "",
+        phone: profileData.salonProfile.phone || "",
+        email: profileData.salonProfile.email || ""
       });
 
-      // Update working hours if available
-      if (profile.workingHours) {
-        setWorkingHours(profile.workingHours);
+      // Update working hours
+      if (profileData.salonProfile.workingHours) {
+        setWorkingHours(profileData.salonProfile.workingHours);
       }
-    }
-  }, [profile]);
 
-  // Update local state when templates data is loaded
-  useEffect(() => {
-    if (templates && templates.length > 0) {
-      const birthdayTemplate = templates.find(t => t.type === 'birthday');
-      const anniversaryTemplate = templates.find(t => t.type === 'anniversary');
-      
+      // Update notifications
+      setNotifications({
+        birthdayReminders: profileData.notifications.birthdayReminders,
+        anniversaryReminders: profileData.notifications.anniversaryReminders,
+        whatsappNotifications: profileData.notifications.whatsAppNotifications,
+        smsNotifications: profileData.notifications.smsNotifications
+      });
+
+      // Update message templates
       setMessageTemplates({
-        birthday: birthdayTemplate?.message || messageTemplates.birthday,
-        anniversary: anniversaryTemplate?.message || messageTemplates.anniversary
+        birthday: profileData.messageTemplates.birthday || "Hi [CustomerName], SalonPro wishes you a very happy birthday! 🎉 Enjoy 20% off on your next visit this month!",
+        anniversary: profileData.messageTemplates.anniversary || "Hi [CustomerName], happy salon anniversary! 🎊 Thank you for being our valued customer. Here's 15% off your next service!"
       });
     }
-  }, [templates]);
+  }, [profileData]);
 
   // Mutations
   const updateSalonProfileMutation = useMutation({
@@ -119,6 +138,7 @@ export const Settings = () => {
         title: "Working Hours Updated",
         description: "Your working hours have been updated successfully.",
       });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
     },
     onError: (error: any) => {
       toast({
@@ -136,6 +156,7 @@ export const Settings = () => {
         title: "Notifications Updated",
         description: "Your notification settings have been saved successfully.",
       });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
     },
     onError: (error: any) => {
       toast({
@@ -153,7 +174,7 @@ export const Settings = () => {
         title: "Templates Updated",
         description: "Your message templates have been updated successfully.",
       });
-      queryClient.invalidateQueries({ queryKey: ['reminder-templates'] });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
     },
     onError: (error: any) => {
       toast({
