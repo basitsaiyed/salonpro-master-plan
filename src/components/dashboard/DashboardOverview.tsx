@@ -135,7 +135,7 @@ export const DashboardOverview = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {dashboardData.recentCustomers?.length > 0 ? (
+              {dashboardData.recentCustomers.length > 0 ? (
                 dashboardData.recentCustomers.map((customer, index) => (
                   <div key={index} className="flex justify-between items-center py-2 border-b last:border-b-0">
                     <div>
@@ -158,7 +158,7 @@ export const DashboardOverview = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {dashboardData.upcomingReminders?.length > 0 ? (
+              {dashboardData.upcomingReminders.length > 0 ? (
                 dashboardData.upcomingReminders.map((reminder, index) => (
                   <div key={index} className="flex justify-between items-center py-2 border-b last:border-b-0">
                     <div>
