@@ -1,3 +1,4 @@
+
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { apiClient, User } from '@/lib/api';
 
@@ -10,11 +11,15 @@ interface AuthState {
   error: string | null;
 }
 
+// Initialize with proper token and role check
+const storedToken = localStorage.getItem('token');
+const storedRole = localStorage.getItem('role');
+
 const initialState: AuthState = {
-  isAuthenticated: false,
+  isAuthenticated: !!storedToken, // Set to true if token exists
   user: null,
-  role: localStorage.getItem('role'),
-  token: localStorage.getItem('token'),
+  role: storedRole,
+  token: storedToken,
   loading: false,
   error: null,
 };
@@ -72,8 +77,10 @@ const authSlice = createSlice({
   reducers: {
     logout: (state) => {
       localStorage.removeItem('token');
+      localStorage.removeItem('role');
       state.user = null;
       state.token = null;
+      state.role = null;
       state.isAuthenticated = false;
       state.error = null;
     },
@@ -132,26 +139,21 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         state.loading = false;
         state.error = null;
+
+        // Ensure role is stored in localStorage when user data is fetched
+        localStorage.setItem('role', action.payload.role);
       })
       .addCase(getCurrentUser.rejected, (state, action) => {
         state.user = null;
         state.token = null;
+        state.role = null;
         state.isAuthenticated = false;
         state.loading = false;
         state.error = action.payload?.message || 'Authentication failed';
 
-        // Remove invalid token
+        // Remove invalid token and role
         localStorage.removeItem('token');
-      })
-      
-      // Handle logout
-      .addCase(logout, (state) => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('role'); // Clear role on logout
-        state.user = null;
-        state.token = null;
-        state.role = null; // Reset role
-        state.isAuthenticated = false;
+        localStorage.removeItem('role');
       });
   },
 });
