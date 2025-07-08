@@ -54,7 +54,7 @@ export const CreateInvoiceDialog = ({ onCreateInvoice }: CreateInvoiceDialogProp
   const loadData = async () => {
     try {
       setLoading(true);
-      
+
       // Load customers and services first
       const [customersData, servicesData] = await Promise.all([
         apiClient.getCustomers(),
@@ -65,7 +65,7 @@ export const CreateInvoiceDialog = ({ onCreateInvoice }: CreateInvoiceDialogProp
       console.log('Services loaded:', servicesData);
       setCustomers(customersData || []);
       setServices(servicesData || []);
-      
+
       // Load employees separately if user is owner
       if (user?.role === 'owner') {
         try {
@@ -123,12 +123,13 @@ export const CreateInvoiceDialog = ({ onCreateInvoice }: CreateInvoiceDialogProp
 
   const calculateTotal = () => {
     const subtotal = calculateSubtotal();
-    return subtotal - discount + tax;
+    const taxAmount = subtotal * (tax / 100);  // ✅ apply tax as a percentage
+    return subtotal - discount + taxAmount;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!selectedCustomer || Object.keys(selectedServices).length === 0) {
       toast({
         title: "Error",
@@ -143,7 +144,7 @@ export const CreateInvoiceDialog = ({ onCreateInvoice }: CreateInvoiceDialogProp
       quantity,
       ...(user?.role === 'owner' && employeeId && { employeeId })
     }));
-    
+
     const invoiceData: CreateInvoiceInput = {
       customerId: selectedCustomer,
       items,
@@ -154,7 +155,7 @@ export const CreateInvoiceDialog = ({ onCreateInvoice }: CreateInvoiceDialogProp
       paymentMethod,
       notes
     };
-    
+
     try {
       await onCreateInvoice(invoiceData);
       // Reset form
@@ -221,7 +222,7 @@ export const CreateInvoiceDialog = ({ onCreateInvoice }: CreateInvoiceDialogProp
               </SelectContent>
             </Select>
           </div>
-          
+
           <div>
             <Label>Services</Label>
             <div className="space-y-3 max-h-64 overflow-y-auto border rounded-md p-3">
@@ -257,7 +258,7 @@ export const CreateInvoiceDialog = ({ onCreateInvoice }: CreateInvoiceDialogProp
                       />
                     )}
                   </div>
-                  
+
                   {/* Employee selection - only show for owners */}
                   {service.ID in selectedServices && user?.role === 'owner' && employees.length > 0 && (
                     <div className="ml-6">
@@ -271,8 +272,8 @@ export const CreateInvoiceDialog = ({ onCreateInvoice }: CreateInvoiceDialogProp
                         </SelectTrigger>
                         <SelectContent>
                           {employees.map(employee => (
-                            <SelectItem key={employee.ID} value={employee.ID}>
-                              {employee.Name}
+                            <SelectItem key={employee.id} value={employee.id}>
+                              {employee.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -297,12 +298,12 @@ export const CreateInvoiceDialog = ({ onCreateInvoice }: CreateInvoiceDialogProp
               />
             </div>
             <div>
-              <Label htmlFor="tax">Tax (₹)</Label>
+              <Label htmlFor="tax">Tax (%)</Label>
               <Input
                 id="tax"
                 type="number"
                 min="0"
-                step="0.01" 
+                step="0.01"
                 value={tax}
                 onChange={(e) => setTax(parseFloat(e.target.value) || 0)}
               />
@@ -367,7 +368,7 @@ export const CreateInvoiceDialog = ({ onCreateInvoice }: CreateInvoiceDialogProp
             </div>
             <div className="flex justify-between text-sm">
               <span>Tax:</span>
-              <span>+₹{tax.toFixed(2)}</span>
+              <span>%{tax.toFixed(2)}</span>
             </div>
             <div className="flex justify-between items-center font-bold text-lg border-t pt-2">
               <span>Total:</span>

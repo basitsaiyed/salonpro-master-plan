@@ -152,7 +152,7 @@ export const EditInvoiceDialog = ({ invoice, open, onOpenChange, onEditInvoice }
               />
             </div>
             <div>
-              <Label htmlFor="tax">Tax (₹)</Label>
+              <Label htmlFor="tax">Tax (%)</Label>
               <Input
                 id="tax"
                 type="number"
@@ -223,7 +223,7 @@ export const EditInvoiceDialog = ({ invoice, open, onOpenChange, onEditInvoice }
               </div>
               <div className="flex justify-between text-sm">
                 <span>Tax:</span>
-                <span>+₹{formData.tax.toFixed(2)}</span>
+                <span>%{formData.tax.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center font-bold text-lg border-t pt-2">
                 <span>Total:</span>
