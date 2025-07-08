@@ -16,8 +16,8 @@ const storedToken = localStorage.getItem('token');
 const storedRole = localStorage.getItem('role');
 
 const initialState: AuthState = {
-  isAuthenticated: !!storedToken, // Set to true if token exists
-  user: null,
+  isAuthenticated: !!storedToken,
+  user: storedRole ? { role: storedRole } as any : null,  // temp user object
   role: storedRole,
   token: storedToken,
   loading: false,
@@ -56,12 +56,18 @@ export const registerUser = createAsyncThunk<RegisterResponse, unknown>(
   }
 );
 
+// Define the actual API response type
+interface GetCurrentUserResponse {
+  user: User;
+  salon: unknown;  // Replace 'unknown' with your actual Salon type if needed
+}
+
 export const getCurrentUser = createAsyncThunk<User, void, { rejectValue: AuthError }>(
   'auth/getCurrentUser',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await apiClient.getCurrentUser();
-      return response;
+      const response = await apiClient.getCurrentUser();  // now properly typed
+      return response.user;  // ✅ returns only the user
     } catch (error: any) {
       return rejectWithValue({
         message: error.message,
@@ -144,17 +150,18 @@ const authSlice = createSlice({
         localStorage.setItem('role', action.payload.role);
       })
       .addCase(getCurrentUser.rejected, (state, action) => {
-        state.user = null;
-        state.token = null;
-        state.role = null;
-        state.isAuthenticated = false;
+        if (action.payload?.status === 401 || action.payload?.status === 403) {
+          state.user = null;
+          state.token = null;
+          state.role = null;
+          state.isAuthenticated = false;
+          localStorage.removeItem('token');
+          localStorage.removeItem('role');
+        }
         state.loading = false;
         state.error = action.payload?.message || 'Authentication failed';
-
-        // Remove invalid token and role
-        localStorage.removeItem('token');
-        localStorage.removeItem('role');
       });
+
   },
 });
 

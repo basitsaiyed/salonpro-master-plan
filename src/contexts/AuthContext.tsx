@@ -39,11 +39,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   useEffect(() => {
     const initializeAuth = async () => {
       const storedToken = localStorage.getItem('token');
-      const storedRole = localStorage.getItem('role');
 
-      console.log('Initializing auth - Token:', !!storedToken, 'Role:', storedRole);
+      console.log('Initializing auth - Token:', !!storedToken);
 
-      if (storedToken && !user) {
+      if (storedToken) {
         try {
           console.log('Fetching current user...');
           const result = await dispatch(getCurrentUser()).unwrap();
@@ -62,7 +61,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     };
 
     initializeAuth();
-  }, [dispatch, user]);
+  }, [dispatch]);  // Only dispatch, no user dependency
+
 
   // Log role changes for debugging
   useEffect(() => {

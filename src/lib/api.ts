@@ -63,8 +63,8 @@ class ApiClient {
   }
 
   // Get current user profile
-  async getCurrentUser(): Promise<User> {
-    return this.request<User>("/auth/me")
+  async getCurrentUser(): Promise<GetCurrentUserResponse> {
+    return this.request<GetCurrentUserResponse>("/auth/me")
   }
 
   // Customer methods
@@ -439,6 +439,11 @@ export interface QuickStatistics {
   totalInvoices: number;
   avgMonthlyVisits: number;
   avgOrderValue: number;
+}
+
+export interface GetCurrentUserResponse {
+  user: User;
+  salon: any; // You can replace 'any' with a proper Salon type if needed
 }
 
 export interface AnalyticsSummary {

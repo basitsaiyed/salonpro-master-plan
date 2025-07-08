@@ -49,7 +49,7 @@ export const AppSidebar = ({ activeTab, onTabChange }: AppSidebarProps) => {
   const isCollapsed = state === "collapsed";
 
   // Use role from Redux state, fallback to user.role, then fallback to localStorage
-  const currentRole = role || user?.role || localStorage.getItem('role');
+  const currentRole = role ?? user?.role ?? localStorage.getItem('role') ?? 'employee'; // fallback default
 
   console.log("Current user role:", currentRole); // Debug log to verify role
 
