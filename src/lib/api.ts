@@ -403,7 +403,7 @@ export interface User {
   Name: string;
   Email: string;
   Phone: string;
-  Role: 'owner' | 'employee';
+  role: 'owner' | 'employee';
   SalonName?: string;
   SalonID?: string;
   CreatedAt: string;

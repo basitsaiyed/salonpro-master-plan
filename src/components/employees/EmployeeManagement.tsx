@@ -60,11 +60,18 @@ export const EmployeeManagement = () => {
     }
   };
 
-  const filteredEmployees = employees.filter(employee =>
-    employee.Name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    employee.Email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    employee.Phone.includes(searchTerm)
-  );
+  const lowerSearchTerm = searchTerm.toLowerCase();
+  const filteredEmployees = employees.filter(employee => {
+    const name = employee.Name ? employee.Name.toLowerCase() : '';
+    const email = employee.Email ? employee.Email.toLowerCase() : '';
+    const phone = employee.Phone ? employee.Phone.toString() : '';
+
+    return (
+      name.includes(lowerSearchTerm) ||
+      email.includes(lowerSearchTerm) ||
+      phone.includes(searchTerm) // Phone doesn't need lowercase conversion
+    );
+  });
 
   const handleCreateEmployee = async (employeeData: CreateEmployeeInput) => {
     try {
@@ -86,7 +93,7 @@ export const EmployeeManagement = () => {
 
   const handleEditEmployee = async (updateData: UpdateEmployeeInput) => {
     if (!editingEmployee) return;
-    
+
     try {
       await apiClient.updateEmployee(editingEmployee.ID, updateData);
       await loadEmployees();
@@ -106,7 +113,7 @@ export const EmployeeManagement = () => {
 
   const handleDeleteEmployee = async () => {
     if (!employeeToDelete) return;
-    
+
     try {
       await apiClient.deleteEmployee(employeeToDelete.ID);
       await loadEmployees();
@@ -150,18 +157,18 @@ export const EmployeeManagement = () => {
             Employee
           </span>
         </div>
-        
+
         <div className="flex justify-end gap-2">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             onClick={() => openEditDialog(employee)}
             title="Edit Employee"
           >
             <Edit className="h-4 w-4" />
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             onClick={() => openDeleteDialog(employee)}
             title="Remove Employee"
@@ -244,16 +251,16 @@ export const EmployeeManagement = () => {
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-1">
-                              <Button 
-                                variant="outline" 
+                              <Button
+                                variant="outline"
                                 size="sm"
                                 onClick={() => openEditDialog(employee)}
                                 title="Edit Employee"
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
-                              <Button 
-                                variant="outline" 
+                              <Button
+                                variant="outline"
                                 size="sm"
                                 onClick={() => openDeleteDialog(employee)}
                                 title="Remove Employee"

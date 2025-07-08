@@ -46,10 +46,10 @@ export const AppSidebar = ({ activeTab, onTabChange }: AppSidebarProps) => {
   const { user, logout } = useAuth();
   const isCollapsed = state === "collapsed";
 
-  console.log("Current user role:", user?.Role); // Debug log to verify role
+  console.log("Current user role:", user?.role); // Debug log to verify role
 
   // Determine navigation items based on user role
-  const navItems = user?.Role === 'owner' ? ownerNavItems : employeeNavItems;
+  const navItems = user?.role === 'owner' ? ownerNavItems : employeeNavItems;
 
   console.log("Navigation items for current user:", navItems); // Debug log
 
@@ -109,7 +109,7 @@ export const AppSidebar = ({ activeTab, onTabChange }: AppSidebarProps) => {
           {!isCollapsed && (
             <div>
               <h1 className="text-xl font-bold text-slate-800">SalonPro</h1>
-              {user?.Role === 'employee' && (
+              {user?.role === 'employee' && (
                 <p className="text-xs text-slate-600">Employee Access</p>
               )}
             </div>
@@ -166,7 +166,7 @@ export const AppSidebar = ({ activeTab, onTabChange }: AppSidebarProps) => {
                 </p>
                 {/* Show role for debugging */}
                 <p className="text-slate-500 text-xs">
-                  Role: {user?.Role || 'Unknown'}
+                  Role: {user?.role || 'Unknown'}
                 </p>
               </div>
             )}

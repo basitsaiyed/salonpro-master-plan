@@ -18,7 +18,7 @@ const Index = () => {
 
   // Set default tab based on user role
   useEffect(() => {
-    if (user?.Role === 'employee') {
+    if (user?.role === 'employee') {
       setActiveTab("customers");
     } else {
       setActiveTab("dashboard");
@@ -28,7 +28,7 @@ const Index = () => {
   // Handle tab changes with role-based restrictions
   const handleTabChange = (tab: ActiveTab) => {
     // Restrict employee access to only customers and invoices
-    if (user?.Role === 'employee') {
+    if (user?.role === 'employee') {
       if (tab === 'customers' || tab === 'invoices') {
         setActiveTab(tab);
       }
@@ -42,21 +42,21 @@ const Index = () => {
   const renderContent = () => {
     switch (activeTab) {
       case "dashboard":
-        return user?.Role === 'owner' ? <DashboardOverview /> : <CustomerManagement />;
+        return user?.role === 'owner' ? <DashboardOverview /> : <CustomerManagement />;
       case "customers":
         return <CustomerManagement />;
       case "employees":
-        return user?.Role === 'owner' ? <EmployeeManagement /> : <CustomerManagement />;
+        return user?.role === 'owner' ? <EmployeeManagement /> : <CustomerManagement />;
       case "services":
-        return user?.Role === 'owner' ? <ServiceManagement /> : <CustomerManagement />;
+        return user?.role === 'owner' ? <ServiceManagement /> : <CustomerManagement />;
       case "invoices":
         return <InvoiceManagement />;
       case "reports":
-        return user?.Role === 'owner' ? <Reports /> : <CustomerManagement />;
+        return user?.role === 'owner' ? <Reports /> : <CustomerManagement />;
       case "settings":
-        return user?.Role === 'owner' ? <Settings /> : <CustomerManagement />;
+        return user?.role === 'owner' ? <Settings /> : <CustomerManagement />;
       default:
-        return user?.Role === 'owner' ? <DashboardOverview /> : <CustomerManagement />;
+        return user?.role === 'owner' ? <DashboardOverview /> : <CustomerManagement />;
     }
   };
 

@@ -4,6 +4,7 @@ import { apiClient, User } from '@/lib/api';
 interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
+  role: string | null;
   token: string | null;
   loading: boolean;
   error: string | null;
@@ -12,6 +13,7 @@ interface AuthState {
 const initialState: AuthState = {
   isAuthenticated: false,
   user: null,
+  role: localStorage.getItem('role'),
   token: localStorage.getItem('token'),
   loading: false,
   error: null,
@@ -84,44 +86,49 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.user = action.payload.user;
+        state.role = action.payload.user.role;
         state.token = action.payload.token;
         state.isAuthenticated = true;
         state.loading = false;
         state.error = null;
-        
+
         // Store token in localStorage
         localStorage.setItem('token', action.payload.token);
+        localStorage.setItem('role', action.payload.user.role);
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Login failed';
       })
-      
+
       // Register cases
       .addCase(registerUser.pending, (state) => {
         state.loading = true;
       })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.user = action.payload.user;
+        state.role = action.payload.user.role;
         state.token = action.payload.token;
         state.isAuthenticated = true;
         state.loading = false;
         state.error = null;
-        
+
         // Store token in localStorage
         localStorage.setItem('token', action.payload.token);
+        localStorage.setItem('role', action.payload.user.role);
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Registration failed';
       })
-      
+
       // getCurrentUser cases
       .addCase(getCurrentUser.pending, (state) => {
         state.loading = true;
       })
       .addCase(getCurrentUser.fulfilled, (state, action) => {
         state.user = action.payload;
+        state.role = action.payload.role;
         state.isAuthenticated = true;
         state.loading = false;
         state.error = null;
@@ -132,9 +139,19 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
         state.loading = false;
         state.error = action.payload?.message || 'Authentication failed';
-        
+
         // Remove invalid token
         localStorage.removeItem('token');
+      })
+      
+      // Handle logout
+      .addCase(logout, (state) => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('role'); // Clear role on logout
+        state.user = null;
+        state.token = null;
+        state.role = null; // Reset role
+        state.isAuthenticated = false;
       });
   },
 });
