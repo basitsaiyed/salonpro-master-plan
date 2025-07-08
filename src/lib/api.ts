@@ -207,36 +207,30 @@ class ApiClient {
 
   // Employee management endpoints
   async getEmployees(): Promise<Employee[]> {
-    const response = await this.request<{ employees: Employee[] }>('/auth/employees', {
+    const response = await this.request<{ employees: Employee[] }>('/api/employees', {
       method: 'GET',
     });
-    return response.employees || [];
+    return response.employees;
   }
 
   async createEmployee(employeeData: CreateEmployeeInput): Promise<Employee> {
-    const response = await this.request<{ employee: Employee }>('/auth/employees', {
+    const response = await this.request<{ employee: Employee }>('/api/employees', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(employeeData),
     });
     return response.employee;
   }
 
   async updateEmployee(employeeId: string, updateData: UpdateEmployeeInput): Promise<Employee> {
-    const response = await this.request<{ employee: Employee }>(`/auth/employees/${employeeId}`, {
+    const response = await this.request<{ employee: Employee }>(`/api/employees/${employeeId}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(updateData),
     });
     return response.employee;
   }
 
   async deleteEmployee(employeeId: string): Promise<void> {
-    await this.request(`/auth/employees/${employeeId}`, {
+    await this.request<void>(`/api/employees/${employeeId}`, {
       method: 'DELETE',
     });
   }
@@ -312,14 +306,14 @@ export interface Customer {
 
 // Employee interface
 export interface Employee {
-  ID: string;
-  Name: string;
-  Email: string;
-  Phone: string;
-  Role: 'employee';
-  SalonID: string;
-  CreatedAt: string;
-  UpdatedAt: string;
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: 'employee' | 'manager' | 'owner';
+  isActive: boolean;
+  createdAt: string;
+  lastLogin?: string | null;
 }
 
 export interface CreateEmployeeInput {
@@ -327,12 +321,14 @@ export interface CreateEmployeeInput {
   email: string;
   phone: string;
   password: string;
+  role: string; // optional if your backend allows
 }
 
 export interface UpdateEmployeeInput {
   name?: string;
   email?: string;
   phone?: string;
+  isActive?: boolean;
 }
 
 // Invoice interfaces

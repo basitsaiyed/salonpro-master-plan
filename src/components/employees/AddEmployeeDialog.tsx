@@ -24,6 +24,7 @@ export const AddEmployeeDialog = ({ onCreateEmployee }: AddEmployeeDialogProps) 
     email: "",
     phone: "",
     password: "",
+    role: "employee", // Default role, can be changed if needed
   });
   const [loading, setLoading] = useState(false);
 
@@ -38,6 +39,7 @@ export const AddEmployeeDialog = ({ onCreateEmployee }: AddEmployeeDialogProps) 
         email: "",
         phone: "",
         password: "",
+        role: "employee", // Reset to default role
       });
       setOpen(false);
     } catch (error) {

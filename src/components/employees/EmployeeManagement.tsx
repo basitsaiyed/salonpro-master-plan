@@ -61,9 +61,9 @@ export const EmployeeManagement = () => {
 
   const lowerSearchTerm = searchTerm.toLowerCase();
   const filteredEmployees = employees.filter(employee => {
-    const name = employee.Name ? employee.Name.toLowerCase() : '';
-    const email = employee.Email ? employee.Email.toLowerCase() : '';
-    const phone = employee.Phone ? employee.Phone.toString() : '';
+    const name = employee.name ? employee.name.toLowerCase() : '';
+    const email = employee.email ? employee.email.toLowerCase() : '';
+    const phone = employee.phone ? employee.phone.toString() : '';
 
     return (
       name.includes(lowerSearchTerm) ||
@@ -94,11 +94,11 @@ export const EmployeeManagement = () => {
     if (!editingEmployee) return;
 
     try {
-      await apiClient.updateEmployee(editingEmployee.ID, updateData);
+      await apiClient.updateEmployee(editingEmployee.id, updateData);
       await loadEmployees();
       toast({
         title: "Employee Updated",
-        description: `${editingEmployee.Name} has been updated successfully.`,
+        description: `${editingEmployee.name} has been updated successfully.`,
       });
     } catch (error) {
       console.error('Failed to update employee:', error);
@@ -114,11 +114,11 @@ export const EmployeeManagement = () => {
     if (!employeeToDelete) return;
 
     try {
-      await apiClient.deleteEmployee(employeeToDelete.ID);
+      await apiClient.deleteEmployee(employeeToDelete.id);
       await loadEmployees();
       toast({
         title: "Employee Removed",
-        description: `${employeeToDelete.Name} has been removed successfully.`,
+        description: `${employeeToDelete.name} has been removed successfully.`,
       });
       setEmployeeToDelete(null);
       setDeleteDialogOpen(false);
@@ -144,13 +144,13 @@ export const EmployeeManagement = () => {
 
   // Mobile card view for employees
   const MobileEmployeeCard = ({ employee }: { employee: Employee }) => (
-    <Card key={employee.ID} className="mb-4">
+    <Card key={employee.id} className="mb-4">
       <CardContent className="p-4">
         <div className="flex justify-between items-start mb-3">
           <div>
-            <h3 className="font-semibold text-lg">{employee.Name}</h3>
-            <p className="text-sm text-gray-600">{employee.Email}</p>
-            <p className="text-sm text-gray-600">{employee.Phone}</p>
+            <h3 className="font-semibold text-lg">{employee.name}</h3>
+            <p className="text-sm text-gray-600">{employee.email}</p>
+            <p className="text-sm text-gray-600">{employee.phone}</p>
           </div>
           <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
             Employee
@@ -220,7 +220,7 @@ export const EmployeeManagement = () => {
               {isMobile ? (
                 <div className="p-4">
                   {filteredEmployees.map((employee) => (
-                    <MobileEmployeeCard key={employee.ID} employee={employee} />
+                    <MobileEmployeeCard key={employee.id} employee={employee} />
                   ))}
                 </div>
               ) : (
@@ -237,12 +237,12 @@ export const EmployeeManagement = () => {
                     </TableHeader>
                     <TableBody>
                       {filteredEmployees.map((employee) => (
-                        <TableRow key={employee.ID}>
+                        <TableRow key={employee.id}>
                           <TableCell className="font-medium">
-                            {employee.Name}
+                            {employee.name}
                           </TableCell>
-                          <TableCell>{employee.Email}</TableCell>
-                          <TableCell>{employee.Phone}</TableCell>
+                          <TableCell>{employee.email}</TableCell>
+                          <TableCell>{employee.phone}</TableCell>
                           <TableCell>
                             <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
                               Employee
@@ -300,7 +300,7 @@ export const EmployeeManagement = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Remove Employee</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove {employeeToDelete?.Name}? This action cannot be undone.
+              Are you sure you want to remove {employeeToDelete?.name}? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

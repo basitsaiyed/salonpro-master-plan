@@ -32,14 +32,14 @@ export const EditEmployeeDialog = ({
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (employee) {
+    if (open && employee) {
       setFormData({
-        name: employee.Name,
-        email: employee.Email,
-        phone: employee.Phone,
+        name: employee.name,
+        email: employee.email,
+        phone: employee.phone,
       });
     }
-  }, [employee]);
+  }, [employee, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,6 +79,7 @@ export const EditEmployeeDialog = ({
               onChange={(e) => handleInputChange("name", e.target.value)}
               placeholder="Enter employee name"
               required
+              disabled={!employee}
             />
           </div>
 
@@ -91,6 +92,7 @@ export const EditEmployeeDialog = ({
               onChange={(e) => handleInputChange("email", e.target.value)}
               placeholder="Enter email address"
               required
+              disabled={!employee}
             />
           </div>
 
@@ -102,6 +104,7 @@ export const EditEmployeeDialog = ({
               onChange={(e) => handleInputChange("phone", e.target.value)}
               placeholder="Enter phone number"
               required
+              disabled={!employee}
             />
           </div>
 
@@ -114,7 +117,7 @@ export const EditEmployeeDialog = ({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading || !employee}>
               {loading ? "Updating..." : "Update Employee"}
             </Button>
           </div>
