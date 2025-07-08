@@ -1,4 +1,3 @@
-
 import { store } from '@/store';
 
 const API_BASE_URL = 'http://localhost:8080';
@@ -340,6 +339,7 @@ export interface UpdateEmployeeInput {
 export interface InvoiceItemInput {
   serviceId: string
   quantity: number
+  employeeId?: string // Optional employee assignment
 }
 
 export interface CreateInvoiceInput {
@@ -374,6 +374,8 @@ export interface InvoiceItem {
   Quantity: number
   UnitPrice: number
   TotalPrice: number
+  EmployeeID?: string // Optional employee who provided the service
+  EmployeeName?: string // Optional employee name for display
   CreatedAt: string
   UpdatedAt: string
 }

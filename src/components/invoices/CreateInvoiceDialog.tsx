@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { apiClient, Customer, Service, CreateInvoiceInput, InvoiceItemInput } from "@/lib/api";
+import { apiClient, Customer, Service, CreateInvoiceInput, InvoiceItemInput, Employee } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Select,
   SelectContent,
@@ -20,12 +20,20 @@ interface CreateInvoiceDialogProps {
   onCreateInvoice: (invoice: CreateInvoiceInput) => void;
 }
 
+interface ServiceWithEmployee {
+  [serviceId: string]: {
+    quantity: number;
+    employeeId?: string;
+  };
+}
+
 export const CreateInvoiceDialog = ({ onCreateInvoice }: CreateInvoiceDialogProps) => {
   const [open, setOpen] = useState(false);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [services, setServices] = useState<Service[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState("");
-  const [selectedServices, setSelectedServices] = useState<{ [key: string]: number }>({});
+  const [selectedServices, setSelectedServices] = useState<ServiceWithEmployee>({});
   const [paymentStatus, setPaymentStatus] = useState<"paid" | "unpaid" | "partial">("unpaid");
   const [discount, setDiscount] = useState(0);
   const [tax, setTax] = useState(0);
@@ -34,8 +42,9 @@ export const CreateInvoiceDialog = ({ onCreateInvoice }: CreateInvoiceDialogProp
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
-  // Load customers and services when dialog opens
+  // Load customers, services, and employees when dialog opens
   useEffect(() => {
     if (open) {
       loadData();
@@ -45,19 +54,33 @@ export const CreateInvoiceDialog = ({ onCreateInvoice }: CreateInvoiceDialogProp
   const loadData = async () => {
     try {
       setLoading(true);
-      const [customersData, servicesData] = await Promise.all([
+      const promises = [
         apiClient.getCustomers(),
         apiClient.getServices()
-      ]);
+      ];
+
+      // Only load employees if user is owner
+      if (user?.role === 'owner') {
+        promises.push(apiClient.getEmployees());
+      }
+
+      const results = await Promise.all(promises);
+      const [customersData, servicesData, employeesData] = results;
+
       console.log('Customers loaded:', customersData);
       console.log('Services loaded:', servicesData);
       setCustomers(customersData || []);
       setServices(servicesData || []);
+      
+      if (user?.role === 'owner' && employeesData) {
+        console.log('Employees loaded:', employeesData);
+        setEmployees(employeesData || []);
+      }
     } catch (error) {
       console.error('Failed to load data:', error);
       toast({
         title: "Error",
-        description: "Failed to load customers and services. Please try again.",
+        description: "Failed to load data. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -69,7 +92,10 @@ export const CreateInvoiceDialog = ({ onCreateInvoice }: CreateInvoiceDialogProp
     setSelectedServices(prev => {
       const newSelection = { ...prev };
       if (quantity > 0) {
-        newSelection[serviceId] = quantity;
+        newSelection[serviceId] = {
+          quantity,
+          employeeId: prev[serviceId]?.employeeId || ""
+        };
       } else {
         delete newSelection[serviceId];
       }
@@ -77,8 +103,18 @@ export const CreateInvoiceDialog = ({ onCreateInvoice }: CreateInvoiceDialogProp
     });
   };
 
+  const handleEmployeeChange = (serviceId: string, employeeId: string) => {
+    setSelectedServices(prev => ({
+      ...prev,
+      [serviceId]: {
+        ...prev[serviceId],
+        employeeId
+      }
+    }));
+  };
+
   const calculateSubtotal = () => {
-    return Object.entries(selectedServices).reduce((total, [serviceId, quantity]) => {
+    return Object.entries(selectedServices).reduce((total, [serviceId, { quantity }]) => {
       const service = services.find(s => s.ID === serviceId);
       return total + (service?.Price || 0) * quantity;
     }, 0);
@@ -101,9 +137,10 @@ export const CreateInvoiceDialog = ({ onCreateInvoice }: CreateInvoiceDialogProp
       return;
     }
 
-    const items: InvoiceItemInput[] = Object.entries(selectedServices).map(([serviceId, quantity]) => ({
+    const items: InvoiceItemInput[] = Object.entries(selectedServices).map(([serviceId, { quantity, employeeId }]) => ({
       serviceId,
-      quantity
+      quantity,
+      ...(user?.role === 'owner' && employeeId && { employeeId })
     }));
     
     const invoiceData: CreateInvoiceInput = {
@@ -148,7 +185,7 @@ export const CreateInvoiceDialog = ({ onCreateInvoice }: CreateInvoiceDialogProp
             <DialogTitle>Create New Invoice</DialogTitle>
           </DialogHeader>
           <div className="flex items-center justify-center py-8">
-            <div className="text-lg">Loading customers and services...</div>
+            <div className="text-lg">Loading data...</div>
           </div>
         </DialogContent>
       </Dialog>
@@ -163,7 +200,7 @@ export const CreateInvoiceDialog = ({ onCreateInvoice }: CreateInvoiceDialogProp
           Create Invoice
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Invoice</DialogTitle>
         </DialogHeader>
@@ -186,36 +223,60 @@ export const CreateInvoiceDialog = ({ onCreateInvoice }: CreateInvoiceDialogProp
           
           <div>
             <Label>Services</Label>
-            <div className="space-y-3 max-h-48 overflow-y-auto border rounded-md p-3">
+            <div className="space-y-3 max-h-64 overflow-y-auto border rounded-md p-3">
               {services.filter(service => service.IsActive).map(service => (
-                <div key={service.ID} className="flex items-center justify-between space-x-2">
-                  <div className="flex items-center space-x-2 flex-1">
-                    <Checkbox
-                      id={service.ID}
-                      checked={service.ID in selectedServices}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          handleServiceToggle(service.ID, 1);
-                        } else {
-                          handleServiceToggle(service.ID, 0);
-                        }
-                      }}
-                    />
-                    <Label
-                      htmlFor={service.ID}
-                      className="flex-1 cursor-pointer text-sm"
-                    >
-                      {service.Name} - ₹{service.Price}
-                    </Label>
+                <div key={service.ID} className="space-y-2 p-2 border rounded-md bg-gray-50">
+                  <div className="flex items-center justify-between space-x-2">
+                    <div className="flex items-center space-x-2 flex-1">
+                      <Checkbox
+                        id={service.ID}
+                        checked={service.ID in selectedServices}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            handleServiceToggle(service.ID, 1);
+                          } else {
+                            handleServiceToggle(service.ID, 0);
+                          }
+                        }}
+                      />
+                      <Label
+                        htmlFor={service.ID}
+                        className="flex-1 cursor-pointer text-sm font-medium"
+                      >
+                        {service.Name} - ₹{service.Price}
+                      </Label>
+                    </div>
+                    {service.ID in selectedServices && (
+                      <Input
+                        type="number"
+                        min="1"
+                        value={selectedServices[service.ID].quantity}
+                        onChange={(e) => handleServiceToggle(service.ID, parseInt(e.target.value) || 1)}
+                        className="w-16 h-8"
+                      />
+                    )}
                   </div>
-                  {service.ID in selectedServices && (
-                    <Input
-                      type="number"
-                      min="1"
-                      value={selectedServices[service.ID]}
-                      onChange={(e) => handleServiceToggle(service.ID, parseInt(e.target.value) || 1)}
-                      className="w-16 h-8"
-                    />
+                  
+                  {/* Employee selection - only show for owners */}
+                  {service.ID in selectedServices && user?.role === 'owner' && employees.length > 0 && (
+                    <div className="ml-6">
+                      <Label className="text-xs text-gray-600">Assigned Employee</Label>
+                      <Select
+                        value={selectedServices[service.ID].employeeId || ""}
+                        onValueChange={(employeeId) => handleEmployeeChange(service.ID, employeeId)}
+                      >
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder="Select employee" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {employees.map(employee => (
+                            <SelectItem key={employee.ID} value={employee.ID}>
+                              {employee.Name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   )}
                 </div>
               ))}
