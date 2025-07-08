@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, ReactNode, useState } from 'react';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -31,20 +32,27 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const dispatch = useAppDispatch();
-  const { isAuthenticated, user, loading, token } = useAppSelector((state) => state.auth);
+  const { isAuthenticated, user, loading, token, role } = useAppSelector((state) => state.auth);
   const { toast } = useToast();
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     const initializeAuth = async () => {
       const storedToken = localStorage.getItem('token');
+      const storedRole = localStorage.getItem('role');
 
-      if (storedToken && !isAuthenticated) {
+      console.log('Initializing auth - Token:', !!storedToken, 'Role:', storedRole);
+
+      if (storedToken && !user) {
         try {
-          await dispatch(getCurrentUser()).unwrap();
+          console.log('Fetching current user...');
+          const result = await dispatch(getCurrentUser()).unwrap();
+          console.log('Current user fetched:', result);
         } catch (error: any) {
+          console.log('Failed to fetch current user:', error);
           if (error.status === 401 || error.status === 403) {
             localStorage.removeItem('token');
+            localStorage.removeItem('role');
             dispatch(logoutAction());
           }
         }
@@ -54,7 +62,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     };
 
     initializeAuth();
-  }, [dispatch, isAuthenticated]);
+  }, [dispatch, user]);
+
+  // Log role changes for debugging
+  useEffect(() => {
+    console.log('Auth state changed - Role:', role, 'User:', user?.role);
+  }, [role, user]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {

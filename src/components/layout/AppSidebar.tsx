@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Scissors, Home, Users, FileText, BarChart3, Settings, LogOut, User, UserPlus } from "lucide-react";
 import { ActiveTab } from "@/pages/Index";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAppSelector } from "@/hooks/useAppSelector";
 import {
   Sidebar,
   SidebarContent,
@@ -44,12 +45,16 @@ const employeeNavItems = [
 export const AppSidebar = ({ activeTab, onTabChange }: AppSidebarProps) => {
   const { state, setOpenMobile } = useSidebar();
   const { user, logout } = useAuth();
+  const { role } = useAppSelector((state) => state.auth);
   const isCollapsed = state === "collapsed";
 
-  console.log("Current user role:", user?.role); // Debug log to verify role
+  // Use role from Redux state, fallback to user.role, then fallback to localStorage
+  const currentRole = role || user?.role || localStorage.getItem('role');
+
+  console.log("Current user role:", currentRole); // Debug log to verify role
 
   // Determine navigation items based on user role
-  const navItems = user?.role === 'owner' ? ownerNavItems : employeeNavItems;
+  const navItems = currentRole === 'owner' ? ownerNavItems : employeeNavItems;
 
   console.log("Navigation items for current user:", navItems); // Debug log
 
@@ -109,7 +114,7 @@ export const AppSidebar = ({ activeTab, onTabChange }: AppSidebarProps) => {
           {!isCollapsed && (
             <div>
               <h1 className="text-xl font-bold text-slate-800">SalonPro</h1>
-              {user?.role === 'employee' && (
+              {currentRole === 'employee' && (
                 <p className="text-xs text-slate-600">Employee Access</p>
               )}
             </div>
@@ -166,7 +171,7 @@ export const AppSidebar = ({ activeTab, onTabChange }: AppSidebarProps) => {
                 </p>
                 {/* Show role for debugging */}
                 <p className="text-slate-500 text-xs">
-                  Role: {user?.role || 'Unknown'}
+                  Role: {currentRole || 'Unknown'}
                 </p>
               </div>
             )}
