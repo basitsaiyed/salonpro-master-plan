@@ -54,27 +54,28 @@ export const CreateInvoiceDialog = ({ onCreateInvoice }: CreateInvoiceDialogProp
   const loadData = async () => {
     try {
       setLoading(true);
-      const promises = [
+      
+      // Load customers and services first
+      const [customersData, servicesData] = await Promise.all([
         apiClient.getCustomers(),
         apiClient.getServices()
-      ];
-
-      // Only load employees if user is owner
-      if (user?.role === 'owner') {
-        promises.push(apiClient.getEmployees());
-      }
-
-      const results = await Promise.all(promises);
-      const [customersData, servicesData, employeesData] = results;
+      ]);
 
       console.log('Customers loaded:', customersData);
       console.log('Services loaded:', servicesData);
       setCustomers(customersData || []);
       setServices(servicesData || []);
       
-      if (user?.role === 'owner' && employeesData) {
-        console.log('Employees loaded:', employeesData);
-        setEmployees(employeesData || []);
+      // Load employees separately if user is owner
+      if (user?.role === 'owner') {
+        try {
+          const employeesData = await apiClient.getEmployees();
+          console.log('Employees loaded:', employeesData);
+          setEmployees(employeesData || []);
+        } catch (error) {
+          console.error('Failed to load employees:', error);
+          setEmployees([]);
+        }
       }
     } catch (error) {
       console.error('Failed to load data:', error);
