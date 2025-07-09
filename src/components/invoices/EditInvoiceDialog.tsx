@@ -141,7 +141,7 @@ export const EditInvoiceDialog = ({ invoice, open, onOpenChange, onEditInvoice }
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="discount">Discount (₹)</Label>
+              <Label htmlFor="discount">Discount ($)</Label>
               <Input
                 id="discount"
                 type="number"
@@ -179,7 +179,7 @@ export const EditInvoiceDialog = ({ invoice, open, onOpenChange, onEditInvoice }
               </Select>
             </div>
             <div>
-              <Label htmlFor="paidAmount">Paid Amount (₹)</Label>
+              <Label htmlFor="paidAmount">Paid Amount ($)</Label>
               <Input
                 id="paidAmount"
                 type="number"
@@ -215,11 +215,11 @@ export const EditInvoiceDialog = ({ invoice, open, onOpenChange, onEditInvoice }
             <div className="bg-gray-50 p-4 rounded-md space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Subtotal:</span>
-                <span>₹{invoice.Subtotal.toFixed(2)}</span>
+                <span>${invoice.Subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Discount:</span>
-                <span>-₹{formData.discount.toFixed(2)}</span>
+                <span>-${formData.discount.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Tax:</span>
@@ -227,7 +227,7 @@ export const EditInvoiceDialog = ({ invoice, open, onOpenChange, onEditInvoice }
               </div>
               <div className="flex justify-between items-center font-bold text-lg border-t pt-2">
                 <span>Total:</span>
-                <span>₹{(invoice.Subtotal - formData.discount + formData.tax).toFixed(2)}</span>
+                <span>${(invoice.Subtotal - formData.discount + formData.tax).toFixed(2)}</span>
               </div>
             </div>
           )}

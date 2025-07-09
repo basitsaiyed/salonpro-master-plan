@@ -70,17 +70,17 @@ export const AppSidebar = ({ activeTab, onTabChange }: AppSidebarProps) => {
   };
 
   // Get initials from user name or email
-  const getInitials = (name?: string, email?: string) => {
-    if (name && name !== 'Salon Owner') {
-      return name
+  const getInitials = (Name?: string, Email?: string) => {
+    if (Name && Name !== 'Salon Owner') {
+      return Name
         .split(' ')
         .map(word => word.charAt(0))
         .join('')
         .toUpperCase()
         .slice(0, 2);
     }
-    if (email && email !== 'owner@salon.com') {
-      return email.charAt(0).toUpperCase();
+    if (Email && Email !== 'owner@salon.com') {
+      return Email.charAt(0).toUpperCase();
     }
     return 'SO';
   };

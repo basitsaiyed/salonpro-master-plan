@@ -82,7 +82,7 @@ export const EditServiceDialog = ({ service, open, onOpenChange, onEditService }
             />
           </div>
           <div>
-            <Label htmlFor="price">Price (₹)</Label>
+            <Label htmlFor="price">Price ($)</Label>
             <Input
               id="price"
               type="number"

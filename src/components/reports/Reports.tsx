@@ -70,7 +70,7 @@ export const Reports = () => {
     );
   }
 
-  const formatCurrency = (amount: number) => `₹${amount.toLocaleString()}`;
+  const formatCurrency = (amount: number) => `$${amount.toLocaleString()}`;
   const formatGrowth = (growth: number) => {
     const sign = growth >= 0 ? '+' : '';
     return `${sign}${growth.toFixed(1)}%`;

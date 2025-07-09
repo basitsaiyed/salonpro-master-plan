@@ -75,7 +75,7 @@ export const AddServiceDialog = ({ onAddService }: AddServiceDialogProps) => {
             />
           </div>
           <div>
-            <Label htmlFor="price">Price (₹)</Label>
+            <Label htmlFor="price">Price ($)</Label>
             <Input
               id="price"
               type="number"

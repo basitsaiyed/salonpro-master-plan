@@ -490,7 +490,10 @@ export interface DashboardOverview {
   totalCustomers: number;
   monthlyRevenue: number;
   totalInvoices: number;
-  upcomingBirthdays: UpcomingEvent[];
+  upcomingBirthdays: {
+    count: number;
+    list: UpcomingEvent[];
+  };
   recentCustomers: RecentCustomer[];
   upcomingReminders: UpcomingReminder[];
   totalEmployees?: number;

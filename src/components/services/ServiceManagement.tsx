@@ -187,7 +187,7 @@ export const ServiceManagement = () => {
               <p className="text-sm text-gray-600 mb-3">{service.Description}</p>
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="text-2xl font-bold text-green-600">₹{service.Price}</p>
+                  <p className="text-2xl font-bold text-green-600">${service.Price}</p>
                   <p className="text-sm text-gray-500">{service.Duration} min</p>
                 </div>
               </div>

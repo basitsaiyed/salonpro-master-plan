@@ -157,7 +157,7 @@ export const InvoiceManagement = () => {
     
     toast({
       title: "Invoice Details",
-      description: `${invoice.InvoiceNumber} - ${customerName} | Services: ${servicesList} | Total: ₹${invoice.Total.toFixed(2)}`,
+      description: `${invoice.InvoiceNumber} - ${customerName} | Services: ${servicesList} | Total: $${invoice.Total.toFixed(2)}`,
     });
   };
 
@@ -199,7 +199,7 @@ export const InvoiceManagement = () => {
             <h3 className="font-semibold text-lg">{invoice.InvoiceNumber}</h3>
             <p className="text-sm text-gray-600">{getCustomerName(invoice.CustomerID)}</p>
           </div>
-          <span className="text-lg font-bold">₹{invoice.Total.toFixed(2)}</span>
+          <span className="text-lg font-bold">${invoice.Total.toFixed(2)}</span>
         </div>
         
         <div className="space-y-2 mb-3">
@@ -335,7 +335,7 @@ export const InvoiceManagement = () => {
                             </div>
                           </TableCell>
                           <TableCell className="font-bold">
-                            ₹{invoice.Total.toFixed(2)}
+                            ${invoice.Total.toFixed(2)}
                           </TableCell>
                           <TableCell>
                             <button 

@@ -245,7 +245,7 @@ export const CreateInvoiceDialog = ({ onCreateInvoice }: CreateInvoiceDialogProp
                         htmlFor={service.ID}
                         className="flex-1 cursor-pointer text-sm font-medium"
                       >
-                        {service.Name} - ₹{service.Price}
+                        {service.Name} - ${service.Price}
                       </Label>
                     </div>
                     {service.ID in selectedServices && (
@@ -287,7 +287,7 @@ export const CreateInvoiceDialog = ({ onCreateInvoice }: CreateInvoiceDialogProp
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="discount">Discount (₹)</Label>
+              <Label htmlFor="discount">Discount ($)</Label>
               <Input
                 id="discount"
                 type="number"
@@ -325,7 +325,7 @@ export const CreateInvoiceDialog = ({ onCreateInvoice }: CreateInvoiceDialogProp
               </Select>
             </div>
             <div>
-              <Label htmlFor="paidAmount">Paid Amount (₹)</Label>
+              <Label htmlFor="paidAmount">Paid Amount ($)</Label>
               <Input
                 id="paidAmount"
                 type="number"
@@ -360,11 +360,11 @@ export const CreateInvoiceDialog = ({ onCreateInvoice }: CreateInvoiceDialogProp
           <div className="bg-gray-50 p-4 rounded-md space-y-2">
             <div className="flex justify-between text-sm">
               <span>Subtotal:</span>
-              <span>₹{calculateSubtotal().toFixed(2)}</span>
+              <span>${calculateSubtotal().toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span>Discount:</span>
-              <span>-₹{discount.toFixed(2)}</span>
+              <span>-${discount.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span>Tax:</span>
@@ -372,7 +372,7 @@ export const CreateInvoiceDialog = ({ onCreateInvoice }: CreateInvoiceDialogProp
             </div>
             <div className="flex justify-between items-center font-bold text-lg border-t pt-2">
               <span>Total:</span>
-              <span>₹{calculateTotal().toFixed(2)}</span>
+              <span>${calculateTotal().toFixed(2)}</span>
             </div>
           </div>
 

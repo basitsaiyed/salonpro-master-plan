@@ -80,7 +80,7 @@ export const DashboardOverview = () => {
     },
     {
       title: "This Month's Revenue",
-      value: `₹${dashboardData.monthlyRevenue?.toFixed(0) ?? "0"}`,
+      value: `$${dashboardData.monthlyRevenue?.toFixed(0) ?? "0"}`,
       icon: TrendingUp,
       color: "text-green-600",
       bgColor: "bg-green-100"
@@ -100,7 +100,7 @@ export const DashboardOverview = () => {
       bgColor: "bg-indigo-100"
     }] : [{
       title: "Upcoming Birthdays",
-      value: (dashboardData.upcomingBirthdays?.length ?? 0).toString(),
+      value: (dashboardData.upcomingBirthdays?.count ?? 0).toString(),
       icon: Calendar,
       color: "text-orange-600",
       bgColor: "bg-orange-100"
