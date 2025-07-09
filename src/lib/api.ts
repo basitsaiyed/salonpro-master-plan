@@ -172,6 +172,11 @@ class ApiClient {
     return this.request<DashboardOverview>('/api/dashboard');
   }
 
+  // Employee Analytics methods
+  async getEmployeeAnalytics(): Promise<EmployeeAnalytics> {
+    return this.request<EmployeeAnalytics>('/api/analytics/employees');
+  }
+
   // Settings methods - updated to match new endpoints
   async getProfile(): Promise<UserProfile> {
     return this.request<UserProfile>('/auth/profile');
@@ -454,6 +459,30 @@ export interface AnalyticsSummary {
   topServices: ServiceSummary[] | null;
   topCustomers: CustomerSummary[] | null;
   quickStats: QuickStatistics;
+  topEmployees?: EmployeeSummary[] | null;
+}
+
+// Employee Analytics interfaces
+export interface EmployeeSummary {
+  id: string;
+  name: string;
+  servicesProvided: number;
+  revenue: number;
+  averageRating?: number;
+}
+
+export interface EmployeeAnalytics {
+  totalActiveEmployees: number;
+  topPerformers: EmployeeSummary[];
+  serviceDistribution: {
+    employeeId: string;
+    employeeName: string;
+    services: { serviceName: string; count: number }[];
+  }[];
+  monthlyPerformance: {
+    month: string;
+    employees: { employeeId: string; employeeName: string; revenue: number }[];
+  }[];
 }
 
 // Dashboard interfaces
@@ -464,6 +493,8 @@ export interface DashboardOverview {
   upcomingBirthdays: UpcomingEvent[];
   recentCustomers: RecentCustomer[];
   upcomingReminders: UpcomingReminder[];
+  totalEmployees?: number;
+  topEmployee?: EmployeeSummary;
 }
 
 export interface UpcomingEvent {

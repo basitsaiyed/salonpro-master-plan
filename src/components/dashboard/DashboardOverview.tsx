@@ -1,14 +1,16 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, FileText, TrendingUp, Calendar } from "lucide-react";
+import { Users, FileText, TrendingUp, Calendar, UserCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiClient, DashboardOverview as DashboardData } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const DashboardOverview = () => {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     loadDashboardData();
@@ -90,14 +92,21 @@ export const DashboardOverview = () => {
       color: "text-purple-600",
       bgColor: "bg-purple-100"
     },
-    {
+    ...(user?.role === 'owner' && dashboardData.totalEmployees !== undefined ? [{
+      title: "Total Employees",
+      value: dashboardData.totalEmployees.toString(),
+      icon: UserCheck,
+      color: "text-indigo-600",
+      bgColor: "bg-indigo-100"
+    }] : [{
       title: "Upcoming Birthdays",
       value: (dashboardData.upcomingBirthdays?.length ?? 0).toString(),
       icon: Calendar,
       color: "text-orange-600",
       bgColor: "bg-orange-100"
-    }
+    }])
   ];
+
   return (
     <div className="space-y-6">
       <div>
@@ -152,28 +161,49 @@ export const DashboardOverview = () => {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Upcoming Reminders</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {dashboardData.upcomingReminders?.length > 0 ? (
-                dashboardData.upcomingReminders.map((reminder, index) => (
-                  <div key={index} className="flex justify-between items-center py-2 border-b last:border-b-0">
-                    <div>
-                      <p className="font-medium text-gray-900">{reminder.name}</p>
-                      <p className="text-sm text-gray-600">{reminder.type}</p>
+        {user?.role === 'owner' && dashboardData.topEmployee ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>Top Employee This Month</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <UserCheck className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="font-bold text-lg text-gray-900">{dashboardData.topEmployee.name}</h3>
+                <p className="text-sm text-gray-600 mb-2">{dashboardData.topEmployee.servicesProvided} services provided</p>
+                <p className="text-lg font-semibold text-green-600">₹{dashboardData.topEmployee.revenue.toFixed(0)} revenue</p>
+                {dashboardData.topEmployee.averageRating && (
+                  <p className="text-sm text-gray-500 mt-1">⭐ {dashboardData.topEmployee.averageRating.toFixed(1)} avg rating</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardHeader>
+              <CardTitle>Upcoming Reminders</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {dashboardData.upcomingReminders?.length > 0 ? (
+                  dashboardData.upcomingReminders.map((reminder, index) => (
+                    <div key={index} className="flex justify-between items-center py-2 border-b last:border-b-0">
+                      <div>
+                        <p className="font-medium text-gray-900">{reminder.name}</p>
+                        <p className="text-sm text-gray-600">{reminder.type}</p>
+                      </div>
+                      <span className="text-sm text-gray-500">{reminder.date}</span>
                     </div>
-                    <span className="text-sm text-gray-500">{reminder.date}</span>
-                  </div>
-                ))
-              ) : (
-                <p className="text-gray-500 text-center py-4">No upcoming reminders</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                  ))
+                ) : (
+                  <p className="text-gray-500 text-center py-4">No upcoming reminders</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

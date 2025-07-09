@@ -1,17 +1,25 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Users, FileText, Calendar, Download } from "lucide-react";
+import { TrendingUp, Users, FileText, Calendar, Download, UserCheck, Award } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const Reports = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const { data: analytics, isLoading, error } = useQuery({
     queryKey: ['reports'],
     queryFn: () => apiClient.getReports(),
+  });
+
+  const { data: employeeAnalytics, isLoading: employeeLoading } = useQuery({
+    queryKey: ['employee-analytics'],
+    queryFn: () => apiClient.getEmployeeAnalytics(),
+    enabled: user?.role === 'owner'
   });
 
   const handleExportReports = () => {
@@ -190,6 +198,101 @@ export const Reports = () => {
         </Card>
       </div>
 
+      {/* Employee Analytics - Only show for owners */}
+      {user?.role === 'owner' && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Top Performing Employees</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {!employeeLoading && employeeAnalytics?.topPerformers && employeeAnalytics.topPerformers.length > 0 ? (
+                  employeeAnalytics.topPerformers.map((employee, index) => (
+                    <div key={employee.id} className="flex justify-between items-center">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                          <Award className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">{employee.name}</p>
+                          <p className="text-sm text-gray-600">{employee.servicesProvided} services</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-green-600">{formatCurrency(employee.revenue)}</p>
+                        {employee.averageRating && (
+                          <p className="text-sm text-gray-500">⭐ {employee.averageRating.toFixed(1)}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                ) : employeeLoading ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="animate-pulse flex justify-between items-center">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                          <div>
+                            <div className="h-4 bg-gray-200 rounded w-24 mb-1"></div>
+                            <div className="h-3 bg-gray-200 rounded w-16"></div>
+                          </div>
+                        </div>
+                        <div className="h-4 bg-gray-200 rounded w-16"></div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-4">No employee data available</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Employee Service Distribution</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {!employeeLoading && employeeAnalytics?.serviceDistribution && employeeAnalytics.serviceDistribution.length > 0 ? (
+                  employeeAnalytics.serviceDistribution.slice(0, 5).map((employee, index) => (
+                    <div key={employee.employeeId} className="border-b pb-3 last:border-b-0">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="font-medium text-gray-900">{employee.employeeName}</p>
+                        <UserCheck className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div className="space-y-1">
+                        {employee.services.slice(0, 3).map((service, serviceIndex) => (
+                          <div key={serviceIndex} className="flex justify-between text-sm">
+                            <span className="text-gray-600">{service.serviceName}</span>
+                            <span className="text-gray-900 font-medium">{service.count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                ) : employeeLoading ? (
+                  <div className="space-y-4">
+                    {[1, 2].map((i) => (
+                      <div key={i} className="animate-pulse">
+                        <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
+                        <div className="space-y-1">
+                          <div className="h-3 bg-gray-200 rounded"></div>
+                          <div className="h-3 bg-gray-200 rounded"></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-4">No service distribution data available</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Quick Stats */}
       <Card>
         <CardHeader>
@@ -217,6 +320,13 @@ export const Reports = () => {
               <p className="text-2xl font-bold text-gray-900">{formatCurrency(analytics?.quickStats.avgOrderValue || 0)}</p>
               <p className="text-sm text-gray-600">Avg. Order Value</p>
             </div>
+            {user?.role === 'owner' && employeeAnalytics && (
+              <div className="text-center md:col-span-4">
+                <UserCheck className="h-8 w-8 mx-auto text-indigo-600 mb-2" />
+                <p className="text-2xl font-bold text-gray-900">{employeeAnalytics.totalActiveEmployees || 0}</p>
+                <p className="text-sm text-gray-600">Active Employees</p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
