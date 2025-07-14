@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "sonner"; // if using Sonner
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,7 @@ const Register = () => {
     ownerName: "",
     email: "",
     phone: "",
+    address: "",
     password: "",
     confirmPassword: ""
   });
@@ -27,28 +29,61 @@ const Register = () => {
     }));
   };
 
+  const validateEmail = (email: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  const validatePhone = (phone: string) =>
+    /^\+?\d{10,15}$/.test(phone);
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (formData.password !== formData.confirmPassword) {
-      // You can add a toast here for password mismatch
+    // Required fields check
+    if (
+      !formData.salonName ||
+      !formData.ownerName ||
+      !formData.email ||
+      !formData.phone ||
+      !formData.address ||
+      !formData.password ||
+      !formData.confirmPassword
+    ) {
+      toast.error("Please fill in all required fields.");
       return;
     }
-    
+
+    if (!validateEmail(formData.email)) {
+      toast.error("Invalid email address.");
+      return;
+    }
+
+    if (!validatePhone(formData.phone)) {
+      toast.error("Phone number must be 10–15 digits.");
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Passwords do not match.");
+      return;
+    }
+
     setIsLoading(true);
-    
+
     const success = await register({
       name: formData.ownerName,
       email: formData.email,
       password: formData.password,
       phone: formData.phone,
-      salonName: formData.salonName
+      salonName: formData.salonName,
+      address: formData.address
     });
-    
+
     if (success) {
-      navigate('/dashboard');
+      toast.success("Account created! Redirecting...");
+      navigate("/dashboard");
+    } else {
+      toast.error("Registration failed. This email or phone number may already be in use.");
     }
-    
+    setIsLoading(false);
+
     setIsLoading(false);
   };
 
@@ -60,7 +95,7 @@ const Register = () => {
         <div className="absolute top-1/3 -left-20 w-48 h-48 bg-gradient-elegant rounded-full opacity-10 animate-bounce-slow"></div>
         <div className="absolute bottom-1/3 right-1/4 w-24 h-24 bg-blue-200 rounded-full opacity-20 animate-pulse-glow"></div>
         <div className="absolute bottom-20 left-1/4 w-20 h-20 bg-slate-200 rounded-full opacity-20 animate-bounce-slow"></div>
-        
+
         {/* Floating Icons */}
         <div className="absolute top-32 right-1/3 animate-float">
           <Heart className="h-6 w-6 text-blue-400 opacity-40" />
@@ -88,7 +123,7 @@ const Register = () => {
           </h2>
           <p className="text-slate-600">Join thousands of salon owners</p>
         </div>
-        
+
         <Card className="backdrop-blur-sm bg-white/90 border-0 shadow-2xl">
           <CardHeader className="text-center pb-4">
             <CardTitle className="text-2xl font-semibold text-slate-800 ">Create Account</CardTitle>
@@ -100,6 +135,7 @@ const Register = () => {
                 <div className="space-y-2">
                   <Label htmlFor="salonName" className="text-slate-700 font-medium">Salon Name</Label>
                   <Input
+                    autoFocus 
                     id="salonName"
                     type="text"
                     value={formData.salonName}
@@ -124,7 +160,7 @@ const Register = () => {
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-slate-700 font-medium">Email</Label>
                 <Input
@@ -138,7 +174,7 @@ const Register = () => {
                   disabled={isLoading}
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="phone" className="text-slate-700 font-medium">Phone</Label>
                 <Input
@@ -152,7 +188,21 @@ const Register = () => {
                   disabled={isLoading}
                 />
               </div>
-              
+
+              <div className="space-y-2">
+                <Label htmlFor="address" className="text-slate-700 font-medium">Address</Label>
+                <Input
+                  id="address"
+                  type="text"
+                  value={formData.address}
+                  onChange={handleChange}
+                  placeholder="Salon address"
+                  className="h-11 border-slate-200 focus:border-blue-400 focus:ring-blue-400 transition-all duration-200"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-slate-700 font-medium">Password</Label>
@@ -181,16 +231,16 @@ const Register = () => {
                   />
                 </div>
               </div>
-              
-              <Button 
-                type="submit" 
+
+              <Button
+                type="submit"
                 className="w-full h-12 bg-gradient-elegant hover:opacity-90 hover:bg-indigo-400 text-gray-500 hover:text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] mt-6"
                 disabled={isLoading}
               >
                 {isLoading ? "Creating Account..." : "Create Account"}
               </Button>
             </form>
-            
+
             <div className="mt-6 text-center text-sm">
               <span className="text-slate-600">Already have an account? </span>
               <Link to="/login" className="text-blue-600 hover:text-blue-500 font-medium hover:underline transition-colors duration-200">
