@@ -1,6 +1,6 @@
 import { store } from '@/store';
 
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 // API client with token support
 class ApiClient {
