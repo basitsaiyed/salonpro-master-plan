@@ -173,9 +173,9 @@ class ApiClient {
   }
 
   // Employee Analytics methods
-  async getEmployeeAnalytics(): Promise<EmployeeAnalytics> {
-    return this.request<EmployeeAnalytics>('/api/analytics/employees');
-  }
+  // async getEmployeeAnalytics(): Promise<EmployeeAnalytics> {
+  //   return this.request<EmployeeAnalytics>('/api/analytics/employees');
+  // }
 
   // Settings methods - updated to match new endpoints
   async getProfile(): Promise<UserProfile> {
@@ -459,7 +459,17 @@ export interface AnalyticsSummary {
   topServices: ServiceSummary[] | null;
   topCustomers: CustomerSummary[] | null;
   quickStats: QuickStatistics;
-  topEmployees?: EmployeeSummary[] | null;
+  topEmployees: {
+    name: string;
+    revenue: number;
+    servicesHandled: number;
+  }[];
+  employeeServiceSummary: {
+    employeeName: string;
+    serviceName: string;
+    count: number;
+    revenue: number;
+  }[];
 }
 
 // Employee Analytics interfaces

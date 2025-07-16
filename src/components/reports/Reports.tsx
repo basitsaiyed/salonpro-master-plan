@@ -16,18 +16,18 @@ export const Reports = () => {
     queryFn: () => apiClient.getReports(),
   });
 
-  const { data: employeeAnalytics, isLoading: employeeLoading } = useQuery({
-    queryKey: ['employee-analytics'],
-    queryFn: () => apiClient.getEmployeeAnalytics(),
-    enabled: user?.role === 'owner'
-  });
+  // const { data: employeeAnalytics, isLoading: employeeLoading } = useQuery({
+  //   queryKey: ['employee-analytics'],
+  //   queryFn: () => apiClient.getEmployeeAnalytics(),
+  //   enabled: user?.role === 'owner'
+  // });
 
   const handleExportReports = () => {
     toast({
       title: "Exporting Reports",
       description: "Your reports are being exported to PDF. Download will start shortly.",
     });
-    
+
     // Simulate export process
     setTimeout(() => {
       toast({
@@ -78,6 +78,7 @@ export const Reports = () => {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Reports & Analytics</h2>
@@ -91,213 +92,108 @@ export const Reports = () => {
 
       {/* Revenue Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">This Month</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center">
-              <div className="flex-1">
-                <p className="text-2xl font-bold text-gray-900">
-                  {formatCurrency(analytics?.currentMonthRevenue || 0)}
-                </p>
-                <p className={`text-sm ${analytics?.monthGrowth && analytics.monthGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {formatGrowth(analytics?.monthGrowth || 0)} from last month
-                </p>
+        {[
+          { title: "This Month", value: analytics?.currentMonthRevenue, growth: analytics?.monthGrowth },
+          { title: "This Quarter", value: analytics?.currentQuarterRevenue, growth: analytics?.quarterGrowth },
+          { title: "This Year", value: analytics?.currentYearRevenue, growth: analytics?.yearGrowth }
+        ].map(({ title, value, growth }, index) => (
+          <Card key={index}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">{title}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center">
+                <div className="flex-1">
+                  <p className="text-2xl font-bold text-gray-900">{formatCurrency(value || 0)}</p>
+                  <p className={`text-sm ${growth && growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {formatGrowth(growth || 0)} from last period
+                  </p>
+                </div>
+                <TrendingUp className={`h-8 w-8 ${growth && growth >= 0 ? 'text-green-600' : 'text-red-600'}`} />
               </div>
-              <TrendingUp className={`h-8 w-8 ${analytics?.monthGrowth && analytics.monthGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`} />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">This Quarter</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center">
-              <div className="flex-1">
-                <p className="text-2xl font-bold text-gray-900">
-                  {formatCurrency(analytics?.currentQuarterRevenue || 0)}
-                </p>
-                <p className={`text-sm ${analytics?.quarterGrowth && analytics.quarterGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {formatGrowth(analytics?.quarterGrowth || 0)} from last quarter
-                </p>
-              </div>
-              <TrendingUp className={`h-8 w-8 ${analytics?.quarterGrowth && analytics.quarterGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`} />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">This Year</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center">
-              <div className="flex-1">
-                <p className="text-2xl font-bold text-gray-900">
-                  {formatCurrency(analytics?.currentYearRevenue || 0)}
-                </p>
-                <p className={`text-sm ${analytics?.yearGrowth && analytics.yearGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {formatGrowth(analytics?.yearGrowth || 0)} from last year
-                </p>
-              </div>
-              <TrendingUp className={`h-8 w-8 ${analytics?.yearGrowth && analytics.yearGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`} />
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      {/* Detailed Reports */}
+      {/* Top Services and Customers */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <CardHeader>
-            <CardTitle>Top Services</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Top Services</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {analytics?.topServices && analytics.topServices.length > 0 ? (
-                analytics.topServices.map((service, index) => (
-                  <div key={index} className="flex justify-between items-center">
-                    <div>
-                      <p className="font-medium text-gray-900">{service.name}</p>
-                      <p className="text-sm text-gray-600">{service.count} services</p>
-                    </div>
-                    <p className="font-bold text-green-600">{formatCurrency(service.revenue)}</p>
+              {analytics?.topServices?.length ? analytics.topServices.map((service, i) => (
+                <div key={i} className="flex justify-between items-center">
+                  <div>
+                    <p className="font-medium text-gray-900">{service.name}</p>
+                    <p className="text-sm text-gray-600">{service.count} services</p>
                   </div>
-                ))
-              ) : (
-                <p className="text-gray-500 text-center py-4">No service data available</p>
-              )}
+                  <p className="font-bold text-green-600">{formatCurrency(service.revenue)}</p>
+                </div>
+              )) : <p className="text-gray-500 text-center py-4">No service data available</p>}
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Top Customers</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Top Customers</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {analytics?.topCustomers && analytics.topCustomers.length > 0 ? (
-                analytics.topCustomers.map((customer, index) => (
-                  <div key={index} className="flex justify-between items-center">
-                    <div>
-                      <p className="font-medium text-gray-900">{customer.name}</p>
-                      <p className="text-sm text-gray-600">{customer.visits} visits</p>
-                    </div>
-                    <p className="font-bold text-green-600">{formatCurrency(customer.spent)}</p>
+              {analytics?.topCustomers?.length ? analytics.topCustomers.map((customer, i) => (
+                <div key={i} className="flex justify-between items-center">
+                  <div>
+                    <p className="font-medium text-gray-900">{customer.name}</p>
+                    <p className="text-sm text-gray-600">{customer.visits} visits</p>
                   </div>
-                ))
-              ) : (
-                <p className="text-gray-500 text-center py-4">No customer data available</p>
-              )}
+                  <p className="font-bold text-green-600">{formatCurrency(customer.spent)}</p>
+                </div>
+              )) : <p className="text-gray-500 text-center py-4">No customer data available</p>}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Employee Analytics - Only show for owners */}
-      {user?.role === 'owner' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Top Performing Employees</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {!employeeLoading && employeeAnalytics?.topPerformers && employeeAnalytics.topPerformers.length > 0 ? (
-                  employeeAnalytics.topPerformers.map((employee, index) => (
-                    <div key={employee.id} className="flex justify-between items-center">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                          <Award className="h-4 w-4 text-blue-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900">{employee.name}</p>
-                          <p className="text-sm text-gray-600">{employee.servicesProvided} services</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-green-600">{formatCurrency(employee.revenue)}</p>
-                        {employee.averageRating && (
-                          <p className="text-sm text-gray-500">⭐ {employee.averageRating.toFixed(1)}</p>
-                        )}
-                      </div>
-                    </div>
-                  ))
-                ) : employeeLoading ? (
-                  <div className="space-y-3">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="animate-pulse flex justify-between items-center">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
-                          <div>
-                            <div className="h-4 bg-gray-200 rounded w-24 mb-1"></div>
-                            <div className="h-3 bg-gray-200 rounded w-16"></div>
-                          </div>
-                        </div>
-                        <div className="h-4 bg-gray-200 rounded w-16"></div>
-                      </div>
-                    ))}
+      {/* Top Employees */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader><CardTitle>Top Employees</CardTitle></CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {analytics?.topEmployees?.length ? analytics.topEmployees.map((emp, i) => (
+                <div key={i} className="flex justify-between items-center">
+                  <div>
+                    <p className="font-medium text-gray-900">{emp.name}</p>
+                    <p className="text-sm text-gray-600">{emp.servicesHandled} services handled</p>
                   </div>
-                ) : (
-                  <p className="text-gray-500 text-center py-4">No employee data available</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                  <p className="font-bold text-green-600">{formatCurrency(emp.revenue)}</p>
+                </div>
+              )) : <p className="text-gray-500 text-center py-4">No employee data available</p>}
+            </div>
+          </CardContent>
+        </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Employee Service Distribution</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {!employeeLoading && employeeAnalytics?.serviceDistribution && employeeAnalytics.serviceDistribution.length > 0 ? (
-                  employeeAnalytics.serviceDistribution.slice(0, 5).map((employee, index) => (
-                    <div key={employee.employeeId} className="border-b pb-3 last:border-b-0">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="font-medium text-gray-900">{employee.employeeName}</p>
-                        <UserCheck className="h-4 w-4 text-blue-600" />
-                      </div>
-                      <div className="space-y-1">
-                        {employee.services.slice(0, 3).map((service, serviceIndex) => (
-                          <div key={serviceIndex} className="flex justify-between text-sm">
-                            <span className="text-gray-600">{service.serviceName}</span>
-                            <span className="text-gray-900 font-medium">{service.count}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))
-                ) : employeeLoading ? (
-                  <div className="space-y-4">
-                    {[1, 2].map((i) => (
-                      <div key={i} className="animate-pulse">
-                        <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
-                        <div className="space-y-1">
-                          <div className="h-3 bg-gray-200 rounded"></div>
-                          <div className="h-3 bg-gray-200 rounded"></div>
-                        </div>
-                      </div>
-                    ))}
+        {/* Employee Service Summary */}
+        <Card>
+          <CardHeader><CardTitle>Employee Service Summary</CardTitle></CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {analytics?.employeeServiceSummary?.length ? analytics.employeeServiceSummary.map((item, i) => (
+                <div key={i} className="flex justify-between items-center">
+                  <div>
+                    <p className="font-medium text-gray-900">{item.employeeName}</p>
+                    <p className="text-sm text-gray-600">{item.serviceName} - {item.count} times</p>
                   </div>
-                ) : (
-                  <p className="text-gray-500 text-center py-4">No service distribution data available</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+                  <p className="font-bold text-green-600">{formatCurrency(item.revenue)}</p>
+                </div>
+              )) : <p className="text-gray-500 text-center py-4">No service summary data</p>}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-      {/* Quick Stats */}
+      {/* Quick Statistics */}
       <Card>
-        <CardHeader>
-          <CardTitle>Quick Statistics</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>Quick Statistics</CardTitle></CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <div className="text-center">
@@ -320,13 +216,6 @@ export const Reports = () => {
               <p className="text-2xl font-bold text-gray-900">{formatCurrency(analytics?.quickStats.avgOrderValue || 0)}</p>
               <p className="text-sm text-gray-600">Avg. Order Value</p>
             </div>
-            {user?.role === 'owner' && employeeAnalytics && (
-              <div className="text-center md:col-span-4">
-                <UserCheck className="h-8 w-8 mx-auto text-indigo-600 mb-2" />
-                <p className="text-2xl font-bold text-gray-900">{employeeAnalytics.totalActiveEmployees || 0}</p>
-                <p className="text-sm text-gray-600">Active Employees</p>
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>
